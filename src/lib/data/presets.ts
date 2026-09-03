@@ -1,0 +1,553 @@
+﻿import type { ReferenceLayer, SpatialRecipe } from '../../types/recipe';
+import type { FeatureCollection } from 'geojson';
+
+export const US_SALES_TERRITORIES_GEOJSON: FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        territory_id: 'TERR-WEST',
+        territory_name: 'Western Region',
+        regional_director: 'Sarah Lin',
+        support_tier: 'Gold',
+        tax_compliance: 'US-WEST-STD',
+        sla_hours: 4,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-125.0, 49.0],
+            [-104.0, 49.0],
+            [-104.0, 31.0],
+            [-117.0, 32.5],
+            [-124.5, 38.0],
+            [-125.0, 49.0],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        territory_id: 'TERR-MIDWEST',
+        territory_name: 'Midwest Region',
+        regional_director: 'Marcus Vance',
+        support_tier: 'Platinum',
+        tax_compliance: 'US-MW-STD',
+        sla_hours: 2,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-104.0, 49.0],
+            [-80.5, 49.0],
+            [-80.5, 36.5],
+            [-104.0, 36.5],
+            [-104.0, 49.0],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        territory_id: 'TERR-SOUTH',
+        territory_name: 'Southern Region',
+        regional_director: 'Elena Rodriguez',
+        support_tier: 'Gold',
+        tax_compliance: 'US-SOUTH-STD',
+        sla_hours: 4,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-106.5, 36.5],
+            [-75.5, 36.5],
+            [-80.0, 25.0],
+            [-97.0, 26.0],
+            [-106.5, 31.8],
+            [-106.5, 36.5],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        territory_id: 'TERR-NORTHEAST',
+        territory_name: 'Northeast Region',
+        regional_director: 'David Chen',
+        support_tier: 'Diamond',
+        tax_compliance: 'US-NE-PREM',
+        sla_hours: 1,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-80.5, 47.5],
+            [-67.0, 45.0],
+            [-71.0, 41.0],
+            [-75.0, 38.5],
+            [-80.5, 38.5],
+            [-80.5, 47.5],
+          ],
+        ],
+      },
+    },
+  ],
+};
+
+export const DISTRIBUTION_HUBS_GEOJSON: FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-MEM',
+        hub_name: 'Memphis SuperHub',
+        facility_type: 'Air Cargo Express',
+        dispatch_capacity_daily: 250000,
+        contact_lead: 'James Miller',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-89.9711, 35.0424],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-DFW',
+        hub_name: 'Dallas-Fort Worth Fulfillment',
+        facility_type: 'Ground Logistics',
+        dispatch_capacity_daily: 180000,
+        contact_lead: 'Maria Santos',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-97.0403, 32.8998],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-ORD',
+        hub_name: 'Chicago Central Gateway',
+        facility_type: 'Intermodal Freight',
+        dispatch_capacity_daily: 320000,
+        contact_lead: 'Tom Kowalski',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-87.9073, 41.9742],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-ONT',
+        hub_name: 'Ontario California West Hub',
+        facility_type: 'West Coast Primary',
+        dispatch_capacity_daily: 220000,
+        contact_lead: 'Lisa Wong',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-117.6012, 34.056],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-EWR',
+        hub_name: 'Newark Metro Distribution',
+        facility_type: 'East Coast Express',
+        dispatch_capacity_daily: 200000,
+        contact_lead: 'Robert Blake',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-74.1686, 40.6895],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        hub_code: 'HUB-ATL',
+        hub_name: 'Atlanta South Fulfillment',
+        facility_type: 'Regional Distribution',
+        dispatch_capacity_daily: 190000,
+        contact_lead: 'Keisha Brown',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-84.4277, 33.6407],
+      },
+    },
+  ],
+};
+
+export const ENVIRONMENTAL_RISK_GEOJSON: FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        zone_id: 'RISK-GULF-1',
+        zone_name: 'Gulf Coast Severe Hurricane Belt',
+        hazard_level: 'Critical - Tier 1',
+        insurance_surcharge_pct: 18.5,
+        required_contingency: 'High Storm Shelter Mandatory',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-97.5, 26.0],
+            [-94.0, 29.5],
+            [-89.0, 30.5],
+            [-82.5, 27.5],
+            [-80.0, 25.0],
+            [-81.5, 24.5],
+            [-88.0, 28.0],
+            [-95.0, 27.0],
+            [-97.5, 26.0],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        zone_id: 'RISK-CAL-SEIS',
+        zone_name: 'San Andreas High Seismic Corridor',
+        hazard_level: 'High - Tier 2',
+        insurance_surcharge_pct: 12.0,
+        required_contingency: 'Seismic Reinforcement Retrofit',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-122.8, 38.8],
+            [-121.2, 36.5],
+            [-117.5, 34.2],
+            [-115.5, 32.8],
+            [-116.5, 32.6],
+            [-118.5, 34.0],
+            [-122.2, 36.8],
+            [-123.5, 38.5],
+            [-122.8, 38.8],
+          ],
+        ],
+      },
+    },
+  ],
+};
+
+export const PRESET_REFERENCE_LAYERS: ReferenceLayer[] = [
+  {
+    id: 'layer-us-sales-territories',
+    name: 'US Regional Sales Territories',
+    description: 'Corporate US division boundaries: West, Midwest, South, and Northeast.',
+    geometryType: 'Polygon',
+    geojson: US_SALES_TERRITORIES_GEOJSON,
+    availableFields: [
+      'territory_id',
+      'territory_name',
+      'regional_director',
+      'support_tier',
+      'tax_compliance',
+      'sla_hours',
+    ],
+    featureCount: 4,
+  },
+  {
+    id: 'layer-distribution-hubs',
+    name: 'US Logistics Distribution Hubs',
+    description: 'Major air cargo and ground fulfillment hubs across the US.',
+    geometryType: 'Point',
+    geojson: DISTRIBUTION_HUBS_GEOJSON,
+    availableFields: [
+      'hub_code',
+      'hub_name',
+      'facility_type',
+      'dispatch_capacity_daily',
+      'contact_lead',
+    ],
+    featureCount: 6,
+  },
+  {
+    id: 'layer-environmental-hazard-zones',
+    name: 'High-Risk Environmental Hazard Zones',
+    description: 'Gulf coast hurricane and California seismic risk corridors.',
+    geometryType: 'Polygon',
+    geojson: ENVIRONMENTAL_RISK_GEOJSON,
+    availableFields: [
+      'zone_id',
+      'zone_name',
+      'hazard_level',
+      'insurance_surcharge_pct',
+      'required_contingency',
+    ],
+    featureCount: 2,
+  },
+];
+
+export const PRESET_RECIPES: SpatialRecipe[] = [
+  {
+    id: 'recipe-territory-assignment',
+    title: 'Sales Territory & Account Executive Matcher',
+    description: 'Assigns customer locations to corporate sales regions and attaches the designated Regional Director and Support Tier.',
+    category: 'Sales & Ops',
+    operation: 'point_in_polygon',
+    referenceLayerId: 'layer-us-sales-territories',
+    isPreset: true,
+    createdAt: '2026-01-01',
+    author: 'GIS Strategy Lead',
+    fieldMappings: [
+      {
+        sourceField: 'territory_name',
+        targetField: 'Assigned_Territory',
+        fallbackValue: 'Unassigned Territory',
+      },
+      {
+        sourceField: 'regional_director',
+        targetField: 'Account_Director',
+        fallbackValue: 'TBD',
+      },
+      {
+        sourceField: 'support_tier',
+        targetField: 'Client_Support_Tier',
+        fallbackValue: 'Standard',
+      },
+      {
+        sourceField: 'sla_hours',
+        targetField: 'Guaranteed_SLA_Hours',
+        fallbackValue: 8,
+      },
+    ],
+  },
+  {
+    id: 'recipe-nearest-hub',
+    title: 'Nearest Logistics Hub & Distance Estimator',
+    description: 'Calculates Euclidean road-approx distance to the closest fulfillment facility and appends the Hub Name, Code, and Capacity.',
+    category: 'Logistics',
+    operation: 'nearest_neighbor',
+    referenceLayerId: 'layer-distribution-hubs',
+    distanceUnit: 'miles',
+    includeDistanceField: true,
+    distanceFieldName: 'Distance_to_Nearest_Hub_mi',
+    isPreset: true,
+    createdAt: '2026-01-01',
+    author: 'Supply Chain Analytics',
+    fieldMappings: [
+      {
+        sourceField: 'hub_name',
+        targetField: 'Closest_Distribution_Hub',
+        fallbackValue: 'None',
+      },
+      {
+        sourceField: 'hub_code',
+        targetField: 'Facility_Routing_Code',
+        fallbackValue: 'N/A',
+      },
+      {
+        sourceField: 'facility_type',
+        targetField: 'Dispatch_Mode',
+        fallbackValue: 'Standard Carrier',
+      },
+    ],
+  },
+  {
+    id: 'recipe-risk-zone-checker',
+    title: 'Environmental Risk & Insurance Underwriting Tag',
+    description: 'Checks if commercial facilities or policyholder locations lie inside designated high-hazard flood/seismic zones.',
+    category: 'Risk & Compliance',
+    operation: 'point_in_polygon',
+    referenceLayerId: 'layer-environmental-hazard-zones',
+    isPreset: true,
+    createdAt: '2026-01-01',
+    author: 'Catastrophe Risk Modeler',
+    fieldMappings: [
+      {
+        sourceField: 'zone_name',
+        targetField: 'Hazard_Zone_Name',
+        fallbackValue: 'Low Risk Area',
+      },
+      {
+        sourceField: 'hazard_level',
+        targetField: 'Underwriting_Risk_Tier',
+        fallbackValue: 'Standard Commercial',
+      },
+      {
+        sourceField: 'insurance_surcharge_pct',
+        targetField: 'Recommended_Surcharge_Pct',
+        fallbackValue: 0.0,
+      },
+      {
+        sourceField: 'required_contingency',
+        targetField: 'Mandatory_Mitigation_Protocol',
+        fallbackValue: 'None',
+      },
+    ],
+  },
+];
+
+export const SAMPLE_CUSTOMER_LEADS = [
+  {
+    lead_id: 'LEAD-1001',
+    company_name: 'Pacific Cloud Logistics',
+    contact_person: 'Alice Howard',
+    city: 'Seattle',
+    state: 'WA',
+    latitude: 47.6062,
+    longitude: -122.3321,
+    annual_spend_usd: 125000,
+  },
+  {
+    lead_id: 'LEAD-1002',
+    company_name: 'Bay Area Robotics',
+    contact_person: 'Kenji Sato',
+    city: 'San Francisco',
+    state: 'CA',
+    latitude: 37.7749,
+    longitude: -122.4194,
+    annual_spend_usd: 340000,
+  },
+  {
+    lead_id: 'LEAD-1003',
+    company_name: 'Mile High BioHealth',
+    contact_person: 'Rachel Green',
+    city: 'Denver',
+    state: 'CO',
+    latitude: 39.7392,
+    longitude: -104.9903,
+    annual_spend_usd: 88000,
+  },
+  {
+    lead_id: 'LEAD-1004',
+    company_name: 'Great Lakes Manufacturing',
+    contact_person: 'Brian O\'Connor',
+    city: 'Chicago',
+    state: 'IL',
+    latitude: 41.8781,
+    longitude: -87.6298,
+    annual_spend_usd: 520000,
+  },
+  {
+    lead_id: 'LEAD-1005',
+    company_name: 'Midwest Distribution Corp',
+    contact_person: 'Samantha Cox',
+    city: 'Indianapolis',
+    state: 'IN',
+    latitude: 39.7684,
+    longitude: -86.1581,
+    annual_spend_usd: 195000,
+  },
+  {
+    lead_id: 'LEAD-1006',
+    company_name: 'Twin Cities Retail Hub',
+    contact_person: 'Greg Larson',
+    city: 'Minneapolis',
+    state: 'MN',
+    latitude: 44.9778,
+    longitude: -93.265,
+    annual_spend_usd: 142000,
+  },
+  {
+    lead_id: 'LEAD-1007',
+    company_name: 'Lone Star Energy Services',
+    contact_person: 'Carlos Delgado',
+    city: 'Houston',
+    state: 'TX',
+    latitude: 29.7604,
+    longitude: -95.3698,
+    annual_spend_usd: 750000,
+  },
+  {
+    lead_id: 'LEAD-1008',
+    company_name: 'Austin NextTech Systems',
+    contact_person: 'Devon Patel',
+    city: 'Austin',
+    state: 'TX',
+    latitude: 30.2672,
+    longitude: -97.7431,
+    annual_spend_usd: 280000,
+  },
+  {
+    lead_id: 'LEAD-1009',
+    company_name: 'Peachtree Logistics & Cargo',
+    contact_person: 'Tamara Jenkins',
+    city: 'Atlanta',
+    state: 'GA',
+    latitude: 33.749,
+    longitude: -84.388,
+    annual_spend_usd: 310000,
+  },
+  {
+    lead_id: 'LEAD-1010',
+    company_name: 'Sunshine Coast Marine Works',
+    contact_person: 'Frank Castiglione',
+    city: 'Miami',
+    state: 'FL',
+    latitude: 25.7617,
+    longitude: -80.1918,
+    annual_spend_usd: 460000,
+  },
+  {
+    lead_id: 'LEAD-1011',
+    company_name: 'Gotham Financial Solutions',
+    contact_person: 'Victoria Sterling',
+    city: 'New York',
+    state: 'NY',
+    latitude: 40.7128,
+    longitude: -74.006,
+    annual_spend_usd: 920000,
+  },
+  {
+    lead_id: 'LEAD-1012',
+    company_name: 'New England Biotech Labs',
+    contact_person: 'Dr. Arthur Campbell',
+    city: 'Boston',
+    state: 'MA',
+    latitude: 42.3601,
+    longitude: -71.0589,
+    annual_spend_usd: 610000,
+  },
+  {
+    lead_id: 'LEAD-1013',
+    company_name: 'Liberty Bell Precision Parts',
+    contact_person: 'Danielle Rossi',
+    city: 'Philadelphia',
+    state: 'PA',
+    latitude: 39.9526,
+    longitude: -75.1652,
+    annual_spend_usd: 215000,
+  },
+  {
+    lead_id: 'LEAD-1014',
+    company_name: 'Chesapeake Defense Systems',
+    contact_person: 'Colonel Mark Hughes',
+    city: 'Baltimore',
+    state: 'MD',
+    latitude: 39.2904,
+    longitude: -76.6122,
+    annual_spend_usd: 840000,
+  },
+  {
+    lead_id: 'LEAD-1015',
+    company_name: 'Aloha Island Supplies',
+    contact_person: 'Keanu Mahoe',
+    city: 'Honolulu',
+    state: 'HI',
+    latitude: 21.3069,
+    longitude: -157.8583,
+    annual_spend_usd: 110000,
+  },
+];
