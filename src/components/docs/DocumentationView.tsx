@@ -103,8 +103,9 @@ export const DocumentationView: React.FC = () => {
           {activeSection === 'quickstart' && (
             <div className="space-y-8 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                  🚀 Quick Start Guide
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <Zap className="w-6 h-6 text-emerald-600" />
+                  <span>Quick Start Guide</span>
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
                   Enrich any spreadsheet in 3 simple steps without writing SQL, Python, or waiting in a GIS backlog.
@@ -161,8 +162,9 @@ export const DocumentationView: React.FC = () => {
           {activeSection === 'operations' && (
             <div className="space-y-8 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                  🧭 Understanding Spatial Operations
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <Compass className="w-6 h-6 text-emerald-600" />
+                  <span>Understanding Spatial Operations</span>
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
                   GeoBridge supports three fundamental geospatial operations that power 90% of business spatial analytics.
@@ -174,7 +176,7 @@ export const DocumentationView: React.FC = () => {
                 <div className="p-6 border border-slate-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                      <span className="w-3 h-3 rounded-full bg-blue-500 inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
                       <span>1. Point in Polygon (Boundary & Territory Matching)</span>
                     </h3>
                     <span className="px-3 py-1 text-xs font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
@@ -185,7 +187,7 @@ export const DocumentationView: React.FC = () => {
                     Determines whether a coordinate falls inside any boundary polygon. If a match is found, attributes from the polygon (e.g., Regional Manager, Tax Tier, District Code) are appended to that row.
                   </p>
                   <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-700 border border-slate-200">
-                    Example: Lead in Seattle (47.60, -122.33) ➔ Matches "Western Region" ➔ Appends Manager "Sarah Lin"
+                    Example: Lead in Seattle (47.60, -122.33) &rarr; Matches "Western Region" &rarr; Appends Manager "Sarah Lin"
                   </div>
                 </div>
 
@@ -193,7 +195,7 @@ export const DocumentationView: React.FC = () => {
                 <div className="p-6 border border-slate-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                      <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
                       <span>2. Nearest Neighbor & Facility Distance</span>
                     </h3>
                     <span className="px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
@@ -204,7 +206,7 @@ export const DocumentationView: React.FC = () => {
                     Scans all facility locations (warehouses, stores, hubs) in the reference layer and finds the closest one. Appends the facility name, facility code, and numerical distance (in miles or kilometers).
                   </p>
                   <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-700 border border-slate-200">
-                    Example: Store in Austin, TX ➔ Closest Hub: "Dallas-Fort Worth Hub" ➔ Distance: 182.4 miles
+                    Example: Store in Austin, TX &rarr; Closest Hub: "Dallas-Fort Worth Hub" &rarr; Distance: 182.4 miles
                   </div>
                 </div>
 
@@ -212,7 +214,7 @@ export const DocumentationView: React.FC = () => {
                 <div className="p-6 border border-slate-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                      <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
                       <span>3. Proximity Buffer & Hazard Intersect</span>
                     </h3>
                     <span className="px-3 py-1 text-xs font-bold bg-amber-50 text-amber-700 rounded-full border border-amber-200">
@@ -223,7 +225,7 @@ export const DocumentationView: React.FC = () => {
                     Applies a custom radial buffer (e.g. 5km, 10km, 25km) around reference shapes or hazard corridors and identifies points that fall inside the impact radius.
                   </p>
                   <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-700 border border-slate-200">
-                    Example: Warehouse within 5km of Gulf Hurricane Belt ➔ Flags "Underwriting Tier: Critical"
+                    Example: Warehouse within 5km of Gulf Hurricane Belt &rarr; Flags "Underwriting Tier: Critical"
                   </div>
                 </div>
               </div>
@@ -234,8 +236,9 @@ export const DocumentationView: React.FC = () => {
           {activeSection === 'custom-tools' && (
             <div className="space-y-8 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                  🛠️ GIS Specialist Guide: Authoring Custom Recipes
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <Layers className="w-6 h-6 text-indigo-600" />
+                  <span>GIS Specialist Guide: Authoring Custom Recipes</span>
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
                   How GIS analysts and administrators can upload company boundaries and publish turnkey spatial recipes for their organization.
@@ -245,7 +248,7 @@ export const DocumentationView: React.FC = () => {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs">A</span>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs font-bold">1</span>
                     <span>Step 1: Prepare Your GeoJSON Layer</span>
                   </h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
@@ -260,24 +263,24 @@ export const DocumentationView: React.FC = () => {
 
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs">B</span>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs font-bold">2</span>
                     <span>Step 2: Upload into GIS Recipe Studio</span>
                   </h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
-                    Navigate to the <strong>GIS Recipe Studio</strong> tab. On the right side, drag and drop your GeoJSON file into the <strong>"Upload New Reference Layer"</strong> box.
+                    Navigate to the <strong>Recipe Studio</strong> tab. On the right side, drag and drop your GeoJSON file into the <strong>"Upload New Reference Layer"</strong> box.
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs">C</span>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-xs font-bold">3</span>
                     <span>Step 3: Map Output Columns & Publish</span>
                   </h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Give your recipe a title and choose the spatial operation. In the <strong>Output Column Mappings</strong> section, pick which attributes to append to the spreadsheet and set default fallback values (e.g. "Unassigned").
                   </p>
-                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900">
-                    💡 <strong>Pro Tip:</strong> Click any attribute chip under the active layer preview to automatically add it as a new output column mapping without typing!
+                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-medium">
+                    <strong>Tip:</strong> Click any attribute chip under the active layer preview to automatically add it as a new output column mapping without typing.
                   </div>
                 </div>
               </div>
@@ -288,8 +291,9 @@ export const DocumentationView: React.FC = () => {
           {activeSection === 'privacy' && (
             <div className="space-y-8 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                  🔒 Architecture & 100% In-Browser Privacy
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                  <span>Architecture & 100% In-Browser Privacy</span>
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
                   Why GeoBridge is safe for confidential customer spreadsheets, regulated defense boundaries, and healthcare location data.
@@ -298,7 +302,7 @@ export const DocumentationView: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                  <ShieldCheck className="w-8 h-8 text-emerald-600" />
+                  <ShieldCheck className="w-7 h-7 text-emerald-600" />
                   <h3 className="font-bold text-slate-900 text-base">Zero Data Leaves Your Device</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     All spreadsheet parsing, coordinate detection, spatial joins, and file exports execute locally in the browser runtime via Turf.js and WebAssembly. No files are uploaded to an external server.
@@ -306,7 +310,7 @@ export const DocumentationView: React.FC = () => {
                 </div>
 
                 <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                  <Code2 className="w-8 h-8 text-indigo-600" />
+                  <Code2 className="w-7 h-7 text-indigo-600" />
                   <h3 className="font-bold text-slate-900 text-base">Zero Infrastructure Cost</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Because processing runs on client hardware, organizations avoid expensive PostGIS database hosting, heavy GPU servers, or recurring per-seat SaaS licensing costs.
@@ -320,8 +324,9 @@ export const DocumentationView: React.FC = () => {
           {activeSection === 'faq' && (
             <div className="space-y-8 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                  ❓ Troubleshooting & FAQ
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <HelpCircle className="w-6 h-6 text-slate-700" />
+                  <span>Troubleshooting & FAQ</span>
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
                   Common spatial data questions and quick solutions.
@@ -332,7 +337,7 @@ export const DocumentationView: React.FC = () => {
                 <details className="group p-5 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer">
                   <summary className="font-bold text-slate-900 text-sm list-none flex items-center justify-between">
                     <span>Why are my points plotting off the coast of Africa or Antarctica?</span>
-                    <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                    <span className="text-slate-400 group-open:rotate-180 transition-transform text-xs font-mono">[-]</span>
                   </summary>
                   <p className="text-xs text-slate-600 mt-3 leading-relaxed">
                     This is the classic <strong>Coordinate Axis Inversion</strong> issue (Latitude and Longitude swapped). Latitude must be between -90 and +90, while Longitude is between -180 and +180. Click the <strong>"Swap Lat / Lon"</strong> button in Step 3 to instantly fix this.
@@ -342,7 +347,7 @@ export const DocumentationView: React.FC = () => {
                 <details className="group p-5 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer">
                   <summary className="font-bold text-slate-900 text-sm list-none flex items-center justify-between">
                     <span>What spreadsheet formats are supported?</span>
-                    <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                    <span className="text-slate-400 group-open:rotate-180 transition-transform text-xs font-mono">[-]</span>
                   </summary>
                   <p className="text-xs text-slate-600 mt-3 leading-relaxed">
                     GeoBridge supports Microsoft Excel files (<code>.xlsx</code>, <code>.xls</code>) and standard Comma-Separated Values (<code>.csv</code>) files up to 100MB in memory.

@@ -180,7 +180,7 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
         .setHTML(
           `<div class="p-2 font-sans">
             <div class="text-sm font-bold text-slate-900 pb-1.5 border-b border-slate-200 mb-1.5 flex items-center justify-between">
-              <span>${props._matched ? '🟢 Matched Record' : '🟡 Unmatched'}</span>
+              <span class="text-xs font-bold uppercase tracking-wider ${props._matched ? 'text-emerald-700' : 'text-amber-700'}">${props._matched ? 'Matched Record' : 'Unmatched'}</span>
             </div>
             ${content}
           </div>`

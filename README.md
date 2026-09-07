@@ -1,13 +1,13 @@
-# GeoBridge 🌍
+# GeoBridge
 
 > **Self-Service Spatial Calculator for Non-GIS Teams**  
-> Eliminating the "specialist trap" by allowing GIS analysts to publish zero-code, reproducible spatial calculation recipes for sales, ops, marketing, and finance teams.
+> Eliminating the specialist bottleneck by allowing GIS analysts to publish zero-code, reproducible spatial calculation recipes for sales, operations, marketing, and finance teams.
 
 ---
 
-## 💡 The Problem
+## The Problem
 
-In most organizations, GIS specialists spend 30–40% of their week fulfilling repetitive, trivial spatial requests:
+In most organizations, GIS specialists spend 30-40% of their week fulfilling repetitive, trivial spatial requests:
 - *"Which sales region do these 5,000 customer leads belong to?"*
 - *"Are any of these store addresses inside designated flood risk zones?"*
 - *"Can you calculate the distance to the closest logistics hub for these addresses?"*
@@ -16,11 +16,11 @@ Business teams wait **2 to 5 days** for a simple spatial lookup in QGIS/ArcGIS, 
 
 ---
 
-## 🚀 The Solution: GeoBridge
+## The Solution: GeoBridge
 
 GeoBridge creates a **two-sided platform**:
 
-1. **🛠️ GIS Recipe Studio (For GIS Specialists):**
+1. **GIS Recipe Studio (For GIS Specialists):**
    - Upload authoritative spatial boundary or facility layers (GeoJSON).
    - Configure spatial operations:
      - **Point-in-Polygon** (Sales regions, tax jurisdictions, boundary tagging).
@@ -29,7 +29,7 @@ GeoBridge creates a **two-sided platform**:
    - Map which layer attributes to append to user spreadsheets.
    - Publish turnkey recipes for the entire company.
 
-2. **🚀 Self-Service Portal (For Business Users):**
+2. **Self-Service Analysis Portal (For Business Users):**
    - Select a published recipe.
    - Drag & drop any Excel (`.xlsx`, `.xls`) or CSV file.
    - Smart coordinate detection automatically identifies `latitude` and `longitude` columns and warns if axes are swapped.
@@ -38,14 +38,14 @@ GeoBridge creates a **two-sided platform**:
 
 ---
 
-## 🔒 100% In-Browser Privacy & Zero Server Cost
+## 100% In-Browser Privacy & Zero Server Cost
 
 - All spatial operations run **100% client-side** using `@turf/turf` and in-memory WebAssembly.
 - **Confidential business spreadsheets never touch an external server or cloud database**, ensuring complete GDPR/HIPAA compliance.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS
 - **Spatial Geometry Engine:** `@turf/turf`
@@ -55,7 +55,7 @@ GeoBridge creates a **two-sided platform**:
 
 ---
 
-## 📦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js >= 18.0.0
@@ -85,11 +85,11 @@ npm run build
 
 ---
 
-## 🧪 Built-in Presets
+## Built-in Presets
 GeoBridge comes pre-loaded with three ready-to-test recipes and sample customer lead data:
 1. **Sales Territory & Account Executive Matcher** (Point-in-Polygon)
 2. **Nearest Logistics Hub & Distance Estimator** (Nearest Neighbor)
 3. **Environmental Risk & Insurance Underwriting Tag** (Hazard Zones)
 
-Simply click **"Load Sample Leads"** in the Self-Service Portal to test with one click!
+Simply click **"Quick Load"** in the Analysis Portal to test with one click.
 

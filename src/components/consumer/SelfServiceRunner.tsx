@@ -631,7 +631,7 @@ export const SelfServiceRunner: React.FC = () => {
                                     : 'text-slate-700'
                                 }`}
                               >
-                                {col} {isAdded && '★'}
+                                {col} {isAdded && <span className="text-[10px] uppercase font-semibold text-emerald-700 ml-1">(Enriched)</span>}
                               </th>
                             );
                           }
