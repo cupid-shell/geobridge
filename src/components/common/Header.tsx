@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, ShieldCheck, Wrench, FileSpreadsheet, RotateCcw } from 'lucide-react';
+import { Layers, ShieldCheck, Wrench, FileSpreadsheet, RotateCcw, BookOpen } from 'lucide-react';
 import { useGeoBridgeStore } from '../../store/useGeoBridgeStore';
 
 export const Header: React.FC = () => {
@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-20">
           
           {/* Logo & Tagline */}
-          <div className="flex items-center space-x-3.5">
+          <div className="flex items-center space-x-3.5 cursor-pointer" onClick={() => setAppMode('consumer')}>
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
               <Layers className="w-6 h-6" />
             </div>
@@ -30,33 +30,45 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Persona Mode Switcher */}
+          {/* Mode Switcher */}
           <div className="flex items-center bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 shadow-inner">
             <button
               onClick={() => setAppMode('consumer')}
-              className={`flex items-center space-x-2.5 px-6 py-2.5 rounded-xl text-base font-bold transition-all duration-200 ${
+              className={`flex items-center space-x-2 px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
                 appMode === 'consumer'
                   ? 'bg-white text-emerald-700 shadow-md shadow-slate-200/50 scale-[1.02]'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-              <span>Self-Service Portal</span>
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Analysis Portal</span>
             </button>
 
             <button
               onClick={() => setAppMode('studio')}
-              className={`flex items-center space-x-2.5 px-6 py-2.5 rounded-xl text-base font-bold transition-all duration-200 ${
+              className={`flex items-center space-x-2 px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
                 appMode === 'studio'
                   ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/50 scale-[1.02]'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Wrench className="w-5 h-5 text-indigo-600" />
-              <span>GIS Recipe Studio</span>
-              <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 rounded-md">
-                {recipes.length} Recipes
+              <Wrench className="w-4 h-4 text-indigo-600" />
+              <span>Recipe Studio</span>
+              <span className="ml-1.5 px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 rounded-md">
+                {recipes.length}
               </span>
+            </button>
+
+            <button
+              onClick={() => setAppMode('docs')}
+              className={`flex items-center space-x-2 px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                appMode === 'docs'
+                  ? 'bg-white text-blue-700 shadow-md shadow-slate-200/50 scale-[1.02]'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-blue-600" />
+              <span>Documentation</span>
             </button>
           </div>
 

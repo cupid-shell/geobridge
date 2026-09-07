@@ -1,6 +1,7 @@
 import { Header } from './components/common/Header';
 import { SelfServiceRunner } from './components/consumer/SelfServiceRunner';
 import { RecipeStudio } from './components/studio/RecipeStudio';
+import { DocumentationView } from './components/docs/DocumentationView';
 import { useGeoBridgeStore } from './store/useGeoBridgeStore';
 import { Compass, ShieldCheck, Database, FileSpreadsheet } from 'lucide-react';
 
@@ -12,7 +13,9 @@ export function App() {
       <Header />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8">
-        {appMode === 'consumer' ? <SelfServiceRunner /> : <RecipeStudio />}
+        {appMode === 'consumer' && <SelfServiceRunner />}
+        {appMode === 'studio' && <RecipeStudio />}
+        {appMode === 'docs' && <DocumentationView />}
       </main>
 
       {/* Footer */}

@@ -1,15 +1,15 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { EnrichmentResult, ReferenceLayer, SpatialRecipe } from '../types/recipe';
 import { PRESET_RECIPES, PRESET_REFERENCE_LAYERS } from '../lib/data/presets';
 
 interface GeoBridgeState {
-  appMode: 'consumer' | 'studio';
+  appMode: 'consumer' | 'studio' | 'docs';
   recipes: SpatialRecipe[];
   referenceLayers: ReferenceLayer[];
   selectedRecipeId: string;
   lastResult: EnrichmentResult | null;
 
-  setAppMode: (mode: 'consumer' | 'studio') => void;
+  setAppMode: (mode: 'consumer' | 'studio' | 'docs') => void;
   setSelectedRecipeId: (id: string) => void;
   setLastResult: (result: EnrichmentResult | null) => void;
 
