@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Header } from './components/common/Header';
 import { SelfServiceRunner } from './components/consumer/SelfServiceRunner';
 import { RecipeStudio } from './components/studio/RecipeStudio';
@@ -5,7 +6,11 @@ import { DocumentationView } from './components/docs/DocumentationView';
 import { useGeoBridgeStore } from './store/useGeoBridgeStore';
 
 export function App() {
-  const { appMode } = useGeoBridgeStore();
+  const { appMode, hydrateFromStorage } = useGeoBridgeStore();
+
+  useEffect(() => {
+    hydrateFromStorage();
+  }, [hydrateFromStorage]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-500 selection:text-white">

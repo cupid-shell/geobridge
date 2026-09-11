@@ -12,12 +12,19 @@ import {
   FileCheck2,
   MapPin,
   HelpCircle,
+  FileSpreadsheet,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useGeoBridgeStore } from '../../store/useGeoBridgeStore';
-import { parseTabularFile, exportToExcel, exportToCsv, exportToGeoJSON } from '../../lib/data/file-parser';
+import {
+  parseTabularFile,
+  exportToExcel,
+  exportToCsv,
+  exportToGeoJSON,
+  exportExceptionsReport,
+} from '../../lib/data/file-parser';
 import { detectCoordinates } from '../../lib/spatial/column-detector';
-import { executeSpatialRecipe } from '../../lib/spatial/engine';
+import { runSpatialCalculation } from '../../lib/spatial/spatial-worker-client';
 import { SAMPLE_CUSTOMER_LEADS } from '../../lib/data/presets';
 import { PreviewMap } from '../map/PreviewMap';
 import { Tooltip } from '../common/Tooltip';
@@ -36,8 +43,10 @@ export const SelfServiceRunner: React.FC = () => {
   const [uploadedRows, setUploadedRows] = useState<Record<string, any>[] | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [detection, setDetection] = useState<ColumnDetectionResult | null>(null);
+  const [inputMode, setInputMode] = useState<'coordinates' | 'postal_code'>('coordinates');
   const [selectedLatCol, setSelectedLatCol] = useState<string>('');
   const [selectedLngCol, setSelectedLngCol] = useState<string>('');
+  const [selectedZipCol, setSelectedZipCol] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<{ processed: number; total: number } | null>(null);
   const [activeTab, setActiveTab] = useState<'map' | 'table'>('map');
@@ -56,6 +65,15 @@ export const SelfServiceRunner: React.FC = () => {
       setDetection(det);
       setSelectedLatCol(det.latColumn || '');
       setSelectedLngCol(det.lngColumn || '');
+      setSelectedZipCol(det.zipColumn || '');
+
+      // Auto-switch to postal mode if coordinates are missing but ZIP is found
+      if (!det.latColumn && !det.lngColumn && det.zipColumn) {
+        setInputMode('postal_code');
+      } else {
+        setInputMode('coordinates');
+      }
+
       setLastResult(null);
     } catch (err: any) {
       alert(err.message || 'Error reading file');
@@ -81,6 +99,8 @@ export const SelfServiceRunner: React.FC = () => {
     setDetection(det);
     setSelectedLatCol('latitude');
     setSelectedLngCol('longitude');
+    setSelectedZipCol('postal_code');
+    setInputMode('coordinates');
     setLastResult(null);
   };
 
@@ -91,8 +111,18 @@ export const SelfServiceRunner: React.FC = () => {
   };
 
   const handleRunEnrichment = async () => {
-    if (!currentRecipe || !currentLayer || !uploadedRows || !selectedLatCol || !selectedLngCol) {
-      alert('Please upload a file and select both Latitude and Longitude columns.');
+    if (!currentRecipe || !currentLayer || !uploadedRows) {
+      alert('Please upload a file and select a valid spatial recipe.');
+      return;
+    }
+
+    if (inputMode === 'coordinates' && (!selectedLatCol || !selectedLngCol)) {
+      alert('Please select both Latitude and Longitude columns, or switch to Postal Code mode.');
+      return;
+    }
+
+    if (inputMode === 'postal_code' && !selectedZipCol) {
+      alert('Please select a Postal Code column.');
       return;
     }
 
@@ -100,12 +130,14 @@ export const SelfServiceRunner: React.FC = () => {
     setProgress({ processed: 0, total: uploadedRows.length });
 
     try {
-      const result = await executeSpatialRecipe({
+      // Execute via Web Worker with main-thread fallback
+      const result = await runSpatialCalculation({
         recipe: currentRecipe,
         referenceLayer: currentLayer,
         rows: uploadedRows,
-        latColumn: selectedLatCol,
-        lngColumn: selectedLngCol,
+        latColumn: inputMode === 'coordinates' ? selectedLatCol : undefined,
+        lngColumn: inputMode === 'coordinates' ? selectedLngCol : undefined,
+        zipColumn: inputMode === 'postal_code' ? selectedZipCol : selectedZipCol || undefined,
         fileName,
         onProgress: (proc, tot) => setProgress({ processed: proc, total: tot }),
       });
@@ -127,14 +159,14 @@ export const SelfServiceRunner: React.FC = () => {
   return (
     <div className="space-y-6 pb-20">
       
-      {/* Clean, Decluttered Toolbar Header */}
+      {/* Clean, Minimalist Toolbar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Spatial Analysis Portal
           </h1>
           <p className="text-sm text-slate-500 font-medium mt-0.5">
-            Enrich spreadsheet coordinates with authoritative GIS layers in seconds.
+            Enrich spreadsheet coordinates or postal codes with authoritative GIS boundaries in seconds.
           </p>
         </div>
 
@@ -249,6 +281,9 @@ export const SelfServiceRunner: React.FC = () => {
                       </span>
                     </Tooltip>
                   )}
+                  <span className="px-2.5 py-0.5 bg-slate-200/80 text-slate-800 border border-slate-300 rounded-md font-mono text-xs font-bold">
+                    +match_confidence
+                  </span>
                 </div>
               </div>
             )}
@@ -266,7 +301,7 @@ export const SelfServiceRunner: React.FC = () => {
                 </h2>
                 <Tooltip
                   title="Accepted Formats"
-                  content="Upload any .xlsx, .xls, or .csv spreadsheet. Coordinates must be decimal degrees (WGS84). Files up to 100MB are processed entirely in browser memory."
+                  content="Upload any .xlsx, .xls, or .csv spreadsheet. Coordinates (or postal codes) are sanitized automatically. Files are processed entirely in browser memory."
                   howToUse="Drag and drop your spreadsheet into the zone below."
                   position="top"
                 >
@@ -323,12 +358,12 @@ export const SelfServiceRunner: React.FC = () => {
                   <FileCheck2 className="w-4 h-4 text-emerald-600" />
                   <span>{uploadedRows.length.toLocaleString()} rows loaded in memory</span>
                 </span>
-                <span className="text-[11px] text-emerald-700 font-bold">100% Private</span>
+                <span className="text-[11px] text-emerald-700 font-bold">100% In-Browser Private</span>
               </div>
             )}
           </div>
 
-          {/* Step 3: Coordinate Verification */}
+          {/* Step 3: Location Resolution & Columns */}
           {uploadedRows && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4 animate-in fade-in duration-200">
               <div className="flex items-center justify-between">
@@ -337,32 +372,42 @@ export const SelfServiceRunner: React.FC = () => {
                     3
                   </span>
                   <h2 className="text-base font-bold text-slate-900">
-                    Confirm Coordinate Columns
+                    Location Mapping
                   </h2>
                 </div>
 
-                <Tooltip
-                  title="Swap Coordinates"
-                  content="Swaps Latitude and Longitude axes. If your data plots in Antarctica or Somalia, coordinates are inverted."
-                  howToUse="Click here to flip X and Y."
-                  position="top"
-                >
+                {/* Input Mode Switcher: Coordinates vs Postal Code */}
+                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-bold">
                   <button
                     type="button"
-                    onClick={handleSwapCoordinates}
-                    className="text-xs font-bold text-slate-600 hover:text-emerald-700 flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all"
+                    onClick={() => setInputMode('coordinates')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${
+                      inputMode === 'coordinates'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
                   >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Swap Lat / Lon</span>
+                    Coordinates
                   </button>
-                </Tooltip>
+                  <button
+                    type="button"
+                    onClick={() => setInputMode('postal_code')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${
+                      inputMode === 'postal_code'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    Postal / ZIP Code
+                  </button>
+                </div>
               </div>
 
               {detection?.warnings && detection.warnings.length > 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
                   <div className="font-bold flex items-center space-x-1.5">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Coordinate Warning</span>
+                    <span>Data Sanitation Notice</span>
                   </div>
                   {detection.warnings.map((w, i) => (
                     <p key={i} className="text-amber-800 text-[11px] font-medium">{w}</p>
@@ -370,70 +415,110 @@ export const SelfServiceRunner: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Latitude (Y)</span>
+              {inputMode === 'coordinates' ? (
+                <>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Select coordinate columns</span>
+                    <Tooltip
+                      title="Swap Coordinates"
+                      content="Swaps Latitude and Longitude axes. If points plot inverted, click here to swap."
+                      position="top"
+                    >
+                      <button
+                        type="button"
+                        onClick={handleSwapCoordinates}
+                        className="font-bold text-slate-600 hover:text-emerald-700 flex items-center space-x-1 px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-50"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Swap Lat / Lon</span>
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Latitude (Y)</span>
+                      </label>
+                      <select
+                        value={selectedLatCol}
+                        onChange={(e) => setSelectedLatCol(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="">-- Select Latitude --</option>
+                        {detection?.allColumns.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
+                        <Compass className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Longitude (X)</span>
+                      </label>
+                      <select
+                        value={selectedLngCol}
+                        onChange={(e) => setSelectedLngCol(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="">-- Select Longitude --</option>
+                        {detection?.allColumns.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 block flex items-center space-x-1">
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Postal / ZIP Code Column</span>
                   </label>
                   <select
-                    value={selectedLatCol}
-                    onChange={(e) => setSelectedLatCol(e.target.value)}
+                    value={selectedZipCol}
+                    onChange={(e) => setSelectedZipCol(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="">-- Select Latitude --</option>
+                    <option value="">-- Select Postal Code Column --</option>
                     {detection?.allColumns.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
-                    <Compass className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Longitude (X)</span>
-                  </label>
-                  <select
-                    value={selectedLngCol}
-                    onChange={(e) => setSelectedLngCol(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="">-- Select Longitude --</option>
-                    {detection?.allColumns.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Sample Coordinate Value Preview */}
-              {detection?.sampleValues.latSample !== undefined && (
-                <div className="text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex items-center justify-between">
-                  <span>First point:</span>
-                  <span className="font-mono font-bold text-slate-700 text-[11px]">
-                    Lat: {detection.sampleValues.latSample}, Lng: {detection.sampleValues.lngSample}
-                  </span>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Offline resolution active: converts US 5-digit and ZIP+4 postal codes into geographic centroids automatically.
+                  </p>
                 </div>
               )}
 
               {/* Run Action Button with Hover Popup */}
               <Tooltip
-                title="Execute Spatial Join"
-                content="Runs in-browser spatial join against the active reference geometry layer. Results and summary metrics appear immediately."
-                howToUse="Click to enrich all loaded rows."
+                title="Execute Spatial Engine"
+                content="Runs in background Web Worker using Flatbush R-Tree broad-phase filtering and Turf.js narrow-phase containment."
+                howToUse="Click to calculate."
                 position="top"
                 className="w-full"
               >
                 <button
                   type="button"
                   onClick={handleRunEnrichment}
-                  disabled={isProcessing || !selectedLatCol || !selectedLngCol}
+                  disabled={
+                    isProcessing ||
+                    (inputMode === 'coordinates' && (!selectedLatCol || !selectedLngCol)) ||
+                    (inputMode === 'postal_code' && !selectedZipCol)
+                  }
                   className={`w-full py-3.5 px-6 rounded-xl text-white font-black text-sm shadow-md transition-all duration-150 flex items-center justify-center space-x-2 ${
-                    isProcessing || !selectedLatCol || !selectedLngCol
+                    isProcessing ||
+                    (inputMode === 'coordinates' && (!selectedLatCol || !selectedLngCol)) ||
+                    (inputMode === 'postal_code' && !selectedZipCol)
                       ? 'bg-slate-400 cursor-not-allowed'
                       : 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] shadow-emerald-600/30'
                   }`}
@@ -442,7 +527,7 @@ export const SelfServiceRunner: React.FC = () => {
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
                       <span>
-                        Calculating ({progress?.processed || 0} / {progress?.total || 0})...
+                        Worker Computing ({progress?.processed || 0} / {progress?.total || 0})...
                       </span>
                     </>
                   ) : (
@@ -473,16 +558,15 @@ export const SelfServiceRunner: React.FC = () => {
                     </h3>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Processed {lastResult.summary.totalRows.toLocaleString()} rows in {lastResult.summary.executionTimeMs} ms
+                    Processed {lastResult.summary.totalRows.toLocaleString()} rows in {lastResult.summary.executionTimeMs} ms via Flatbush R-Tree
                   </p>
                 </div>
 
                 {/* Export Buttons with Hover Popups */}
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Tooltip
-                    title="Export to Microsoft Excel"
-                    content="Generates an .xlsx workbook preserving original columns with new spatial attributes appended."
-                    howToUse="Click to download your enriched Excel file."
+                    title="Export Dual-Sheet Excel (.xlsx)"
+                    content="Generates an executive Excel workbook with Sheet 1 (Enriched Data) and Sheet 2 (Processing Audit Trail)."
                     position="bottom"
                   >
                     <button
@@ -490,24 +574,41 @@ export const SelfServiceRunner: React.FC = () => {
                         exportToExcel(
                           lastResult.data,
                           lastResult.fileName,
-                          lastResult.summary.addedColumns
+                          lastResult.summary.addedColumns,
+                          lastResult.summary
                         )
                       }
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 hover:shadow flex items-center space-x-1.5 transition-all"
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 flex items-center space-x-1.5 transition-all"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download Excel</span>
                     </button>
                   </Tooltip>
 
+                  {lastResult.summary.unmatchedRows > 0 && (
+                    <Tooltip
+                      title="Download Exception Report (.xlsx)"
+                      content="Exports only the unassigned or invalid rows so sales operations can correct addresses."
+                      position="bottom"
+                    >
+                      <button
+                        onClick={() => exportExceptionsReport(lastResult.data, lastResult.fileName)}
+                        className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300 transition-all flex items-center space-x-1"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Exceptions ({lastResult.summary.unmatchedRows})</span>
+                      </button>
+                    </Tooltip>
+                  )}
+
                   <Tooltip
                     title="Export CSV"
-                    content="Comma-separated values text format, ideal for database bulk imports."
+                    content="Plain comma-separated text format."
                     position="bottom"
                   >
                     <button
                       onClick={() => exportToCsv(lastResult.data, lastResult.fileName)}
-                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
+                      className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
                     >
                       CSV
                     </button>
@@ -515,12 +616,12 @@ export const SelfServiceRunner: React.FC = () => {
 
                   <Tooltip
                     title="Export GeoJSON"
-                    content="Standard geospatial geometry format compatible with QGIS, ArcGIS, and Mapbox."
+                    content="Vector geometry format for QGIS, ArcGIS, and Mapbox."
                     position="bottom"
                   >
                     <button
                       onClick={() => exportToGeoJSON(lastResult.previewGeoJSON, lastResult.fileName)}
-                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
+                      className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
                     >
                       GeoJSON
                     </button>
@@ -546,7 +647,7 @@ export const SelfServiceRunner: React.FC = () => {
                   <p className="text-2xl font-black text-emerald-950 mt-0.5">
                     {lastResult.summary.matchedRows.toLocaleString()}
                     <span className="text-xs font-semibold text-emerald-700 ml-1">
-                      ({Math.round((lastResult.summary.matchedRows / lastResult.summary.totalRows) * 100)}%)
+                      ({Math.round((lastResult.summary.matchedRows / Math.max(lastResult.summary.totalRows, 1)) * 100)}%)
                     </span>
                   </p>
                 </div>
@@ -569,6 +670,33 @@ export const SelfServiceRunner: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Match Confidence Breakdown Tiers */}
+              {lastResult.summary.confidenceBreakdown && (
+                <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
+                  <span className="font-bold text-slate-400 uppercase tracking-wider self-center text-[10px]">
+                    Confidence:
+                  </span>
+                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 rounded-lg font-semibold">
+                    Exact: {lastResult.summary.confidenceBreakdown.highExact}
+                  </span>
+                  {lastResult.summary.confidenceBreakdown.centroidFallback > 0 && (
+                    <span className="px-2.5 py-1 bg-blue-100 text-blue-900 rounded-lg font-semibold">
+                      Postal Centroid: {lastResult.summary.confidenceBreakdown.centroidFallback}
+                    </span>
+                  )}
+                  {lastResult.summary.confidenceBreakdown.ambiguousOverlap > 0 && (
+                    <span className="px-2.5 py-1 bg-purple-100 text-purple-900 rounded-lg font-semibold">
+                      Overlap Notice: {lastResult.summary.confidenceBreakdown.ambiguousOverlap}
+                    </span>
+                  )}
+                  {lastResult.summary.confidenceBreakdown.unmatched > 0 && (
+                    <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg font-semibold">
+                      Unassigned: {lastResult.summary.confidenceBreakdown.unmatched}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

@@ -1,4 +1,4 @@
-﻿import type { FeatureCollection } from 'geojson';
+import type { FeatureCollection } from 'geojson';
 
 export type SpatialOperationType = 
   | 'point_in_polygon' 
@@ -41,14 +41,23 @@ export interface SpatialRecipe {
   isPreset?: boolean;
 }
 
+export type ConfidenceTier = 
+  | 'HIGH_EXACT' 
+  | 'BORDERLINE_REVIEW' 
+  | 'AMBIGUOUS_OVERLAP' 
+  | 'CENTROID_FALLBACK' 
+  | 'UNMATCHED';
+
 export interface ColumnDetectionResult {
   latColumn: string | null;
   lngColumn: string | null;
+  zipColumn: string | null;
   allColumns: string[];
   confidence: 'high' | 'medium' | 'low' | 'none';
   sampleValues: {
     latSample?: number;
     lngSample?: number;
+    zipSample?: string;
   };
   warnings: string[];
 }
@@ -60,6 +69,16 @@ export interface EnrichmentSummary {
   invalidCoordinates: number;
   executionTimeMs: number;
   addedColumns: string[];
+  recipeTitle?: string;
+  referenceLayerName?: string;
+  timestamp?: string;
+  confidenceBreakdown?: {
+    highExact: number;
+    borderline: number;
+    ambiguousOverlap: number;
+    centroidFallback: number;
+    unmatched: number;
+  };
 }
 
 export interface EnrichmentResult {

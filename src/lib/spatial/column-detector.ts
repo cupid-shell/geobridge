@@ -1,4 +1,5 @@
 ﻿import type { ColumnDetectionResult } from '../../types/recipe';
+import { sanitizeCoordinate, sanitizePostalCode } from './data-sanitizer';
 
 const LAT_PATTERNS = [
   /^lat$/i,
@@ -28,11 +29,22 @@ const LNG_PATTERNS = [
   /^lon_.*/i,
 ];
 
+const ZIP_PATTERNS = [
+  /^zip$/i,
+  /^zip[_\s]?code$/i,
+  /^postal$/i,
+  /^postal[_\s]?code$/i,
+  /^postcode$/i,
+  /.*zip.*/i,
+  /.*postal.*/i,
+];
+
 export function detectCoordinates(rows: Record<string, any>[]): ColumnDetectionResult {
   if (!rows || rows.length === 0) {
     return {
       latColumn: null,
       lngColumn: null,
+      zipColumn: null,
       allColumns: [],
       confidence: 'none',
       sampleValues: {},
@@ -43,11 +55,12 @@ export function detectCoordinates(rows: Record<string, any>[]): ColumnDetectionR
   const allColumns = Object.keys(rows[0]);
   let latCol: string | null = null;
   let lngCol: string | null = null;
+  let zipCol: string | null = null;
   const warnings: string[] = [];
 
   // Match columns by pattern priority
   for (const pattern of LAT_PATTERNS) {
-    const match = allColumns.find(col => pattern.test(col.trim()));
+    const match = allColumns.find((col) => pattern.test(col.trim()));
     if (match) {
       latCol = match;
       break;
@@ -55,23 +68,32 @@ export function detectCoordinates(rows: Record<string, any>[]): ColumnDetectionR
   }
 
   for (const pattern of LNG_PATTERNS) {
-    const match = allColumns.find(col => pattern.test(col.trim()));
+    const match = allColumns.find((col) => pattern.test(col.trim()));
     if (match && match !== latCol) {
       lngCol = match;
       break;
     }
   }
 
+  for (const pattern of ZIP_PATTERNS) {
+    const match = allColumns.find((col) => pattern.test(col.trim()));
+    if (match) {
+      zipCol = match;
+      break;
+    }
+  }
+
   let latSample: number | undefined;
   let lngSample: number | undefined;
+  let zipSample: string | undefined;
 
-  // Validate values from the first valid rows
+  // Validate values from the first valid rows using sanitizer
   for (const row of rows.slice(0, 50)) {
     if (latCol && lngCol) {
-      const latVal = parseFloat(row[latCol]);
-      const lngVal = parseFloat(row[lngCol]);
+      const latVal = sanitizeCoordinate(row[latCol], true);
+      const lngVal = sanitizeCoordinate(row[lngCol], false);
 
-      if (!isNaN(latVal) && !isNaN(lngVal)) {
+      if (latVal !== null && lngVal !== null) {
         latSample = latVal;
         lngSample = lngVal;
 
@@ -81,7 +103,21 @@ export function detectCoordinates(rows: Record<string, any>[]): ColumnDetectionR
             `Possible coordinate axis inversion: "${latCol}" has values > 90 (${latVal}). Coordinates might be swapped.`
           );
         }
+
+        // Check for projected coordinates in meters
+        if (Math.abs(lngVal) > 180) {
+          warnings.push(
+            `Detected values > 180 (${lngVal}). Coordinates may be in Web Mercator (EPSG:3857) meters instead of WGS84 decimal degrees.`
+          );
+        }
         break;
+      }
+    }
+
+    if (zipCol && !zipSample) {
+      const cleanZip = sanitizePostalCode(row[zipCol]);
+      if (cleanZip) {
+        zipSample = cleanZip;
       }
     }
   }
@@ -89,20 +125,23 @@ export function detectCoordinates(rows: Record<string, any>[]): ColumnDetectionR
   let confidence: ColumnDetectionResult['confidence'] = 'none';
   if (latCol && lngCol) {
     confidence = 'high';
-  } else if (latCol || lngCol) {
+  } else if (zipCol) {
     confidence = 'medium';
+  } else if (latCol || lngCol) {
+    confidence = 'low';
     warnings.push('Only one coordinate axis was automatically detected.');
   } else {
     confidence = 'none';
-    warnings.push('Could not find obvious Latitude/Longitude columns. Please map them manually.');
+    warnings.push('Could not find obvious coordinate or postal columns.');
   }
 
   return {
     latColumn: latCol,
     lngColumn: lngCol,
+    zipColumn: zipCol,
     allColumns,
     confidence,
-    sampleValues: { latSample, lngSample },
+    sampleValues: { latSample, lngSample, zipSample },
     warnings,
   };
 }

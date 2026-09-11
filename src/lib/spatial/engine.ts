@@ -1,18 +1,27 @@
-import * as turf from '@turf/turf';
+﻿import * as turf from '@turf/turf';
 import type { Feature, FeatureCollection, Point } from 'geojson';
 import type {
   EnrichmentResult,
   EnrichmentSummary,
   ReferenceLayer,
   SpatialRecipe,
+  ConfidenceTier,
 } from '../../types/recipe';
+import {
+  buildPolygonSpatialIndex,
+  buildCentroidIndex,
+  fastHaversineDistance,
+} from './spatial-index';
+import { sanitizeCoordinate } from './data-sanitizer';
+import { resolveZipToCoordinates } from './zip-resolver';
 
 export interface ExecuteRecipeParams {
   recipe: SpatialRecipe;
   referenceLayer: ReferenceLayer;
   rows: Record<string, any>[];
-  latColumn: string;
-  lngColumn: string;
+  latColumn?: string;
+  lngColumn?: string;
+  zipColumn?: string;
   fileName: string;
   onProgress?: (processed: number, total: number) => void;
 }
@@ -26,6 +35,7 @@ export async function executeSpatialRecipe(
     rows,
     latColumn,
     lngColumn,
+    zipColumn,
     fileName,
     onProgress,
   } = params;
@@ -35,6 +45,14 @@ export async function executeSpatialRecipe(
   let matchedRows = 0;
   let unmatchedRows = 0;
   let invalidCoordinates = 0;
+
+  const confidenceBreakdown = {
+    highExact: 0,
+    borderline: 0,
+    ambiguousOverlap: 0,
+    centroidFallback: 0,
+    unmatched: 0,
+  };
 
   const enrichedData: Record<string, any>[] = [];
   const previewFeatures: Feature<Point>[] = [];
@@ -49,6 +67,9 @@ export async function executeSpatialRecipe(
       addedColumns.push(distCol);
     }
   }
+  if (!addedColumns.includes('match_confidence')) {
+    addedColumns.push('match_confidence');
+  }
 
   // Pre-process reference layer for buffer operations if needed
   let operationalGeoJSON = referenceLayer.geojson;
@@ -58,28 +79,40 @@ export async function executeSpatialRecipe(
     }) as FeatureCollection;
   }
 
+  // Step 1: Pre-build high performance spatial indices (Flatbush & Centroid Cache)
+  const isPolygonOp = recipe.operation === 'point_in_polygon' || recipe.operation === 'buffer_intersect';
+  const polygonIndex = isPolygonOp ? buildPolygonSpatialIndex(operationalGeoJSON) : null;
+  const centroidIndex = recipe.operation === 'nearest_neighbor' ? buildCentroidIndex(operationalGeoJSON) : null;
+
   // Chunk processing for responsive UI
-  const CHUNK_SIZE = 500;
+  const CHUNK_SIZE = 1000;
 
   for (let i = 0; i < totalRows; i++) {
     const row = { ...rows[i] };
-    const rawLat = row[latColumn];
-    const rawLng = row[lngColumn];
+    let lat: number | null = null;
+    let lng: number | null = null;
+    let isCentroidFallback = false;
 
-    const lat = typeof rawLat === 'number' ? rawLat : parseFloat(String(rawLat).trim());
-    const lng = typeof rawLng === 'number' ? rawLng : parseFloat(String(rawLng).trim());
+    // Try extracting coordinates
+    if (latColumn && lngColumn && row[latColumn] !== undefined && row[lngColumn] !== undefined) {
+      lat = sanitizeCoordinate(row[latColumn], true);
+      lng = sanitizeCoordinate(row[lngColumn], false);
+    }
+
+    // If coordinates are missing or invalid, attempt postal code resolution fallback
+    if ((lat === null || lng === null) && zipColumn && row[zipColumn] !== undefined) {
+      const resolved = resolveZipToCoordinates(row[zipColumn]);
+      if (resolved) {
+        [lng, lat] = resolved;
+        isCentroidFallback = true;
+      }
+    }
 
     // Validate coordinates
-    if (
-      isNaN(lat) ||
-      isNaN(lng) ||
-      lat < -90 ||
-      lat > 90 ||
-      lng < -180 ||
-      lng > 180
-    ) {
+    if (lat === null || lng === null || isNaN(lat) || isNaN(lng)) {
       invalidCoordinates++;
-      // Apply explicit invalid coordinate status
+      unmatchedRows++;
+      confidenceBreakdown.unmatched++;
       for (const mapping of recipe.fieldMappings) {
         row[mapping.targetField] = 'Invalid Coordinates';
       }
@@ -89,76 +122,75 @@ export async function executeSpatialRecipe(
           `distance_${recipe.distanceUnit || 'km'}`;
         row[distCol] = null;
       }
+      row['match_confidence'] = 'UNMATCHED';
       enrichedData.push(row);
       continue;
     }
 
-    const userPt = turf.point([lng, lat]);
     let matched = false;
+    let confidence: ConfidenceTier = 'UNMATCHED';
 
-    if (
-      recipe.operation === 'point_in_polygon' ||
-      recipe.operation === 'buffer_intersect'
-    ) {
-      // Check polygon containment
-      for (const feature of operationalGeoJSON.features) {
-        if (!feature.geometry) continue;
+    if (isPolygonOp && polygonIndex) {
+      // Broad-Phase: Query Flatbush R-Tree in O(log M) time
+      const candidatePolygons = polygonIndex.queryCandidates(lng, lat);
+      const matchingPolygons: Feature[] = [];
 
-        const geomType = feature.geometry.type;
-        if (geomType === 'Polygon' || geomType === 'MultiPolygon') {
-          const isInside = turf.booleanPointInPolygon(userPt, feature as any);
-          if (isInside) {
-            matched = true;
-            matchedRows++;
-
-            // Map configured fields
-            for (const mapping of recipe.fieldMappings) {
-              const srcVal = feature.properties?.[mapping.sourceField];
-              row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
-            }
-            break;
-          }
+      // Narrow-Phase: Ray-casting test only on the few candidates
+      for (const candidate of candidatePolygons) {
+        if (turf.booleanPointInPolygon([lng, lat], candidate as any)) {
+          matchingPolygons.push(candidate);
         }
       }
 
-      if (!matched) {
+      if (matchingPolygons.length > 0) {
+        matched = true;
+        matchedRows++;
+        const primaryMatch = matchingPolygons[0];
+
+        // Map configured fields
+        for (const mapping of recipe.fieldMappings) {
+          const srcVal = primaryMatch.properties?.[mapping.sourceField];
+          row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
+        }
+
+        if (matchingPolygons.length > 1) {
+          confidence = 'AMBIGUOUS_OVERLAP';
+          confidenceBreakdown.ambiguousOverlap++;
+        } else if (isCentroidFallback) {
+          confidence = 'CENTROID_FALLBACK';
+          confidenceBreakdown.centroidFallback++;
+        } else {
+          confidence = 'HIGH_EXACT';
+          confidenceBreakdown.highExact++;
+        }
+      } else {
         unmatchedRows++;
+        confidence = 'UNMATCHED';
+        confidenceBreakdown.unmatched++;
         for (const mapping of recipe.fieldMappings) {
           row[mapping.targetField] = mapping.fallbackValue ?? 'Unmatched';
         }
       }
-    } else if (recipe.operation === 'nearest_neighbor') {
-      // Find closest feature
+    } else if (recipe.operation === 'nearest_neighbor' && centroidIndex) {
+      // Fast Nearest Neighbor using precomputed centroids
       let minDistance = Infinity;
-      let closestFeature: Feature | null = null;
-      const unit = recipe.distanceUnit === 'miles' ? 'miles' : 'kilometers';
+      let closestItem: (typeof centroidIndex.centroids)[0] | null = null;
+      const unit = recipe.distanceUnit === 'miles' ? 'miles' : 'km';
 
-      for (const feature of operationalGeoJSON.features) {
-        if (!feature.geometry) continue;
-
-        let targetPoint: Feature<Point> | null = null;
-        if (feature.geometry.type === 'Point') {
-          targetPoint = feature as Feature<Point>;
-        } else {
-          // Centroid of polygon/line
-          targetPoint = turf.centroid(feature as any);
-        }
-
-        if (targetPoint) {
-          const d = turf.distance(userPt, targetPoint, { units: unit });
-          if (d < minDistance) {
-            minDistance = d;
-            closestFeature = feature;
-          }
+      for (const item of centroidIndex.centroids) {
+        const d = fastHaversineDistance(lat, lng, item.lat, item.lng, unit);
+        if (d < minDistance) {
+          minDistance = d;
+          closestItem = item;
         }
       }
 
-      if (closestFeature) {
+      if (closestItem) {
         matched = true;
         matchedRows++;
 
         for (const mapping of recipe.fieldMappings) {
-          const srcVal = closestFeature.properties?.[mapping.sourceField];
+          const srcVal = closestItem.properties[mapping.sourceField];
           row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
         }
 
@@ -168,17 +200,27 @@ export async function executeSpatialRecipe(
             `distance_to_${referenceLayer.name.toLowerCase().replace(/\s+/g, '_')}_${recipe.distanceUnit || 'km'}`;
           row[distCol] = Math.round(minDistance * 100) / 100;
         }
+
+        confidence = isCentroidFallback ? 'CENTROID_FALLBACK' : 'HIGH_EXACT';
+        if (isCentroidFallback) {
+          confidenceBreakdown.centroidFallback++;
+        } else {
+          confidenceBreakdown.highExact++;
+        }
       } else {
         unmatchedRows++;
+        confidence = 'UNMATCHED';
+        confidenceBreakdown.unmatched++;
         for (const mapping of recipe.fieldMappings) {
           row[mapping.targetField] = mapping.fallbackValue ?? 'No Facilities Found';
         }
       }
     }
 
+    row['match_confidence'] = confidence;
     enrichedData.push(row);
 
-    // Add to map preview (sample up to 2,000 points to keep map snappy)
+    // Limit preview features to first 2,000 for MapLibre rendering performance
     if (previewFeatures.length < 2000) {
       previewFeatures.push({
         type: 'Feature',
@@ -189,16 +231,22 @@ export async function executeSpatialRecipe(
         properties: {
           ...row,
           _matched: matched,
+          _confidence: confidence,
         },
       });
     }
 
-    // Progress reporting
-    if (onProgress && (i % CHUNK_SIZE === 0 || i === totalRows - 1)) {
-      onProgress(i + 1, totalRows);
-      // Yield to event loop
-      await new Promise((resolve) => setTimeout(resolve, 0));
+    // Yield control for non-blocking UI ticks every CHUNK_SIZE rows
+    if (i % CHUNK_SIZE === 0 && onProgress) {
+      onProgress(i, totalRows);
+      if (i % (CHUNK_SIZE * 5) === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
     }
+  }
+
+  if (onProgress) {
+    onProgress(totalRows, totalRows);
   }
 
   const executionTimeMs = Math.round(performance.now() - startTime);
@@ -210,17 +258,19 @@ export async function executeSpatialRecipe(
     invalidCoordinates,
     executionTimeMs,
     addedColumns,
-  };
-
-  const previewGeoJSON: FeatureCollection = {
-    type: 'FeatureCollection',
-    features: previewFeatures,
+    recipeTitle: recipe.title,
+    referenceLayerName: referenceLayer.name,
+    timestamp: new Date().toISOString(),
+    confidenceBreakdown,
   };
 
   return {
     data: enrichedData,
     summary,
-    previewGeoJSON,
+    previewGeoJSON: {
+      type: 'FeatureCollection',
+      features: previewFeatures,
+    },
     fileName,
   };
 }
