@@ -1,4 +1,4 @@
-﻿import type { EnrichmentResult } from '../../types/recipe';
+import type { EnrichmentResult } from '../../types/recipe';
 import { executeSpatialRecipe, type ExecuteRecipeParams } from './engine';
 
 export async function runSpatialCalculation(
@@ -43,6 +43,7 @@ export async function runSpatialCalculation(
       const serializableParams = {
         recipe: params.recipe,
         referenceLayer: params.referenceLayer,
+        referenceLayers: params.referenceLayers,
         rows: params.rows,
         latColumn: params.latColumn,
         lngColumn: params.lngColumn,

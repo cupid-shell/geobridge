@@ -1,10 +1,11 @@
-﻿import * as turf from '@turf/turf';
+import * as turf from '@turf/turf';
 import type { Feature, FeatureCollection, Point } from 'geojson';
 import type {
   EnrichmentResult,
   EnrichmentSummary,
   ReferenceLayer,
   SpatialRecipe,
+  RecipeStep,
   ConfidenceTier,
 } from '../../types/recipe';
 import {
@@ -17,7 +18,8 @@ import { resolveZipToCoordinates } from './zip-resolver';
 
 export interface ExecuteRecipeParams {
   recipe: SpatialRecipe;
-  referenceLayer: ReferenceLayer;
+  referenceLayer?: ReferenceLayer;
+  referenceLayers?: ReferenceLayer[];
   rows: Record<string, any>[];
   latColumn?: string;
   lngColumn?: string;
@@ -26,12 +28,28 @@ export interface ExecuteRecipeParams {
   onProgress?: (processed: number, total: number) => void;
 }
 
+interface PreparedStep {
+  id: string;
+  name: string;
+  operation: SpatialRecipe['operation'];
+  referenceLayer: ReferenceLayer;
+  fieldMappings: SpatialRecipe['fieldMappings'];
+  bufferRadiusKm?: number;
+  distanceUnit?: 'km' | 'miles';
+  includeDistanceField?: boolean;
+  distanceFieldName?: string;
+  polygonIndex: ReturnType<typeof buildPolygonSpatialIndex> | null;
+  centroidIndex: ReturnType<typeof buildCentroidIndex> | null;
+  addedColumns: string[];
+}
+
 export async function executeSpatialRecipe(
   params: ExecuteRecipeParams
 ): Promise<EnrichmentResult> {
   const {
     recipe,
     referenceLayer,
+    referenceLayers = [],
     rows,
     latColumn,
     lngColumn,
@@ -57,32 +75,98 @@ export async function executeSpatialRecipe(
   const enrichedData: Record<string, any>[] = [];
   const previewFeatures: Feature<Point>[] = [];
 
-  // Determine output columns
-  const addedColumns = recipe.fieldMappings.map((m) => m.targetField);
-  if (recipe.operation === 'nearest_neighbor' && recipe.includeDistanceField) {
-    const distCol =
-      recipe.distanceFieldName ||
-      `distance_to_${referenceLayer.name.toLowerCase().replace(/\s+/g, '_')}_${recipe.distanceUnit || 'km'}`;
-    if (!addedColumns.includes(distCol)) {
-      addedColumns.push(distCol);
+  // Pool of available reference layers
+  const layerPool = new Map<string, ReferenceLayer>();
+  if (referenceLayer) {
+    layerPool.set(referenceLayer.id, referenceLayer);
+  }
+  for (const l of referenceLayers) {
+    layerPool.set(l.id, l);
+  }
+
+  // Synthesize pipeline steps (either from recipe.steps if chained, or single recipe)
+  const rawSteps: RecipeStep[] =
+    recipe.isChained && recipe.steps && recipe.steps.length > 0
+      ? recipe.steps
+      : [
+          {
+            id: recipe.id,
+            name: recipe.title,
+            operation: recipe.operation,
+            referenceLayerId: recipe.referenceLayerId,
+            fieldMappings: recipe.fieldMappings,
+            bufferRadiusKm: recipe.bufferRadiusKm,
+            distanceUnit: recipe.distanceUnit,
+            includeDistanceField: recipe.includeDistanceField,
+            distanceFieldName: recipe.distanceFieldName,
+          },
+        ];
+
+  // Prepare and index each step
+  const preparedSteps: PreparedStep[] = [];
+  const allAddedColumns: string[] = [];
+
+  for (const step of rawSteps) {
+    const layer = layerPool.get(step.referenceLayerId) || referenceLayer || referenceLayers[0];
+    if (!layer) {
+      throw new Error(`Reference layer "${step.referenceLayerId}" not found for step "${step.name}".`);
     }
-  }
-  if (!addedColumns.includes('match_confidence')) {
-    addedColumns.push('match_confidence');
+
+    const stepAddedColumns: string[] = [];
+    for (const m of step.fieldMappings) {
+      if (!stepAddedColumns.includes(m.targetField)) {
+        stepAddedColumns.push(m.targetField);
+      }
+      if (!allAddedColumns.includes(m.targetField)) {
+        allAddedColumns.push(m.targetField);
+      }
+    }
+
+    let distanceFieldName: string | undefined = undefined;
+    if (step.operation === 'nearest_neighbor' && step.includeDistanceField) {
+      distanceFieldName =
+        step.distanceFieldName ||
+        `distance_to_${layer.name.toLowerCase().replace(/\s+/g, '_')}_${step.distanceUnit || 'km'}`;
+      if (!stepAddedColumns.includes(distanceFieldName)) {
+        stepAddedColumns.push(distanceFieldName);
+      }
+      if (!allAddedColumns.includes(distanceFieldName)) {
+        allAddedColumns.push(distanceFieldName);
+      }
+    }
+
+    // Pre-process geometry for buffers if needed
+    let operationalGeoJSON = layer.geojson;
+    if (step.operation === 'buffer_intersect' && step.bufferRadiusKm) {
+      operationalGeoJSON = turf.buffer(layer.geojson, step.bufferRadiusKm, {
+        units: 'kilometers',
+      }) as FeatureCollection;
+    }
+
+    // Build spatial indices
+    const isPolygonOp = step.operation === 'point_in_polygon' || step.operation === 'buffer_intersect';
+    const polygonIndex = isPolygonOp ? buildPolygonSpatialIndex(operationalGeoJSON) : null;
+    const centroidIndex = step.operation === 'nearest_neighbor' ? buildCentroidIndex(operationalGeoJSON) : null;
+
+    preparedSteps.push({
+      id: step.id,
+      name: step.name,
+      operation: step.operation,
+      referenceLayer: layer,
+      fieldMappings: step.fieldMappings,
+      bufferRadiusKm: step.bufferRadiusKm,
+      distanceUnit: step.distanceUnit,
+      includeDistanceField: step.includeDistanceField,
+      distanceFieldName,
+      polygonIndex,
+      centroidIndex,
+      addedColumns: stepAddedColumns,
+    });
   }
 
-  // Pre-process reference layer for buffer operations if needed
-  let operationalGeoJSON = referenceLayer.geojson;
-  if (recipe.operation === 'buffer_intersect' && recipe.bufferRadiusKm) {
-    operationalGeoJSON = turf.buffer(referenceLayer.geojson, recipe.bufferRadiusKm, {
-      units: 'kilometers',
-    }) as FeatureCollection;
+  if (!allAddedColumns.includes('match_confidence')) {
+    allAddedColumns.push('match_confidence');
   }
-
-  // Step 1: Pre-build high performance spatial indices (Flatbush & Centroid Cache)
-  const isPolygonOp = recipe.operation === 'point_in_polygon' || recipe.operation === 'buffer_intersect';
-  const polygonIndex = isPolygonOp ? buildPolygonSpatialIndex(operationalGeoJSON) : null;
-  const centroidIndex = recipe.operation === 'nearest_neighbor' ? buildCentroidIndex(operationalGeoJSON) : null;
 
   // Chunk processing for responsive UI
   const CHUNK_SIZE = 1000;
@@ -113,111 +197,129 @@ export async function executeSpatialRecipe(
       invalidCoordinates++;
       unmatchedRows++;
       confidenceBreakdown.unmatched++;
-      for (const mapping of recipe.fieldMappings) {
-        row[mapping.targetField] = 'Invalid Coordinates';
-      }
-      if (recipe.operation === 'nearest_neighbor' && recipe.includeDistanceField) {
-        const distCol =
-          recipe.distanceFieldName ||
-          `distance_${recipe.distanceUnit || 'km'}`;
-        row[distCol] = null;
+      for (const step of preparedSteps) {
+        for (const mapping of step.fieldMappings) {
+          row[mapping.targetField] = 'Invalid Coordinates';
+        }
+        if (step.distanceFieldName) {
+          row[step.distanceFieldName] = null;
+        }
       }
       row['match_confidence'] = 'UNMATCHED';
       enrichedData.push(row);
       continue;
     }
 
-    let matched = false;
-    let confidence: ConfidenceTier = 'UNMATCHED';
+    const stepConfidences: ConfidenceTier[] = [];
+    let rowMatchedAnyStep = false;
 
-    if (isPolygonOp && polygonIndex) {
-      // Broad-Phase: Query Flatbush R-Tree in O(log M) time
-      const candidatePolygons = polygonIndex.queryCandidates(lng, lat);
-      const matchingPolygons: Feature[] = [];
+    // Execute each pipeline step sequentially
+    for (const step of preparedSteps) {
+      if (step.polygonIndex) {
+        // Broad-Phase: Query Flatbush R-Tree in O(log M) time
+        const candidatePolygons = step.polygonIndex.queryCandidates(lng, lat);
+        const matchingPolygons: Feature[] = [];
 
-      // Narrow-Phase: Ray-casting test only on the few candidates
-      for (const candidate of candidatePolygons) {
-        if (turf.booleanPointInPolygon([lng, lat], candidate as any)) {
-          matchingPolygons.push(candidate);
-        }
-      }
-
-      if (matchingPolygons.length > 0) {
-        matched = true;
-        matchedRows++;
-        const primaryMatch = matchingPolygons[0];
-
-        // Map configured fields
-        for (const mapping of recipe.fieldMappings) {
-          const srcVal = primaryMatch.properties?.[mapping.sourceField];
-          row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
+        // Narrow-Phase: Ray-casting test only on the few candidates
+        for (const candidate of candidatePolygons) {
+          if (turf.booleanPointInPolygon([lng, lat], candidate as any)) {
+            matchingPolygons.push(candidate);
+          }
         }
 
-        if (matchingPolygons.length > 1) {
-          confidence = 'AMBIGUOUS_OVERLAP';
-          confidenceBreakdown.ambiguousOverlap++;
-        } else if (isCentroidFallback) {
-          confidence = 'CENTROID_FALLBACK';
-          confidenceBreakdown.centroidFallback++;
+        if (matchingPolygons.length > 0) {
+          rowMatchedAnyStep = true;
+          const primaryMatch = matchingPolygons[0];
+
+          for (const mapping of step.fieldMappings) {
+            const srcVal = primaryMatch.properties?.[mapping.sourceField];
+            row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
+          }
+
+          if (matchingPolygons.length > 1) {
+            stepConfidences.push('AMBIGUOUS_OVERLAP');
+          } else if (isCentroidFallback) {
+            stepConfidences.push('CENTROID_FALLBACK');
+          } else {
+            stepConfidences.push('HIGH_EXACT');
+          }
         } else {
-          confidence = 'HIGH_EXACT';
-          confidenceBreakdown.highExact++;
+          for (const mapping of step.fieldMappings) {
+            row[mapping.targetField] = mapping.fallbackValue ?? 'Unmatched';
+          }
+          stepConfidences.push('UNMATCHED');
         }
-      } else {
-        unmatchedRows++;
-        confidence = 'UNMATCHED';
-        confidenceBreakdown.unmatched++;
-        for (const mapping of recipe.fieldMappings) {
-          row[mapping.targetField] = mapping.fallbackValue ?? 'Unmatched';
-        }
-      }
-    } else if (recipe.operation === 'nearest_neighbor' && centroidIndex) {
-      // Fast Nearest Neighbor using precomputed centroids
-      let minDistance = Infinity;
-      let closestItem: (typeof centroidIndex.centroids)[0] | null = null;
-      const unit = recipe.distanceUnit === 'miles' ? 'miles' : 'km';
+      } else if (step.centroidIndex) {
+        // Fast Nearest Neighbor using precomputed centroids
+        let minDistance = Infinity;
+        let closestItem: (typeof step.centroidIndex.centroids)[0] | null = null;
+        const unit = step.distanceUnit === 'miles' ? 'miles' : 'km';
 
-      for (const item of centroidIndex.centroids) {
-        const d = fastHaversineDistance(lat, lng, item.lat, item.lng, unit);
-        if (d < minDistance) {
-          minDistance = d;
-          closestItem = item;
-        }
-      }
-
-      if (closestItem) {
-        matched = true;
-        matchedRows++;
-
-        for (const mapping of recipe.fieldMappings) {
-          const srcVal = closestItem.properties[mapping.sourceField];
-          row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
+        for (const item of step.centroidIndex.centroids) {
+          const d = fastHaversineDistance(lat, lng, item.lat, item.lng, unit);
+          if (d < minDistance) {
+            minDistance = d;
+            closestItem = item;
+          }
         }
 
-        if (recipe.includeDistanceField) {
-          const distCol =
-            recipe.distanceFieldName ||
-            `distance_to_${referenceLayer.name.toLowerCase().replace(/\s+/g, '_')}_${recipe.distanceUnit || 'km'}`;
-          row[distCol] = Math.round(minDistance * 100) / 100;
-        }
+        if (closestItem) {
+          rowMatchedAnyStep = true;
 
-        confidence = isCentroidFallback ? 'CENTROID_FALLBACK' : 'HIGH_EXACT';
-        if (isCentroidFallback) {
-          confidenceBreakdown.centroidFallback++;
+          for (const mapping of step.fieldMappings) {
+            const srcVal = closestItem.properties[mapping.sourceField];
+            row[mapping.targetField] = srcVal !== undefined ? srcVal : (mapping.fallbackValue ?? null);
+          }
+
+          if (step.includeDistanceField && step.distanceFieldName) {
+            row[step.distanceFieldName] = Math.round(minDistance * 100) / 100;
+          }
+
+          stepConfidences.push(isCentroidFallback ? 'CENTROID_FALLBACK' : 'HIGH_EXACT');
         } else {
-          confidenceBreakdown.highExact++;
-        }
-      } else {
-        unmatchedRows++;
-        confidence = 'UNMATCHED';
-        confidenceBreakdown.unmatched++;
-        for (const mapping of recipe.fieldMappings) {
-          row[mapping.targetField] = mapping.fallbackValue ?? 'No Facilities Found';
+          for (const mapping of step.fieldMappings) {
+            row[mapping.targetField] = mapping.fallbackValue ?? 'No Facilities Found';
+          }
+          if (step.distanceFieldName) {
+            row[step.distanceFieldName] = null;
+          }
+          stepConfidences.push('UNMATCHED');
         }
       }
     }
 
-    row['match_confidence'] = confidence;
+    // Overall Confidence Scoring across pipeline
+    let overallConfidence: ConfidenceTier = 'UNMATCHED';
+    const hasOverlap = stepConfidences.includes('AMBIGUOUS_OVERLAP');
+    const hasFallback = stepConfidences.includes('CENTROID_FALLBACK');
+    const allHighExact = stepConfidences.length > 0 && stepConfidences.every((c) => c === 'HIGH_EXACT');
+    const allUnmatched = stepConfidences.length > 0 && stepConfidences.every((c) => c === 'UNMATCHED');
+    const someMatched = stepConfidences.some((c) => c !== 'UNMATCHED');
+
+    if (allHighExact) {
+      overallConfidence = 'HIGH_EXACT';
+      confidenceBreakdown.highExact++;
+    } else if (hasOverlap) {
+      overallConfidence = 'AMBIGUOUS_OVERLAP';
+      confidenceBreakdown.ambiguousOverlap++;
+    } else if (hasFallback) {
+      overallConfidence = 'CENTROID_FALLBACK';
+      confidenceBreakdown.centroidFallback++;
+    } else if (someMatched && !allUnmatched) {
+      overallConfidence = 'BORDERLINE_REVIEW';
+      confidenceBreakdown.borderline++;
+    } else {
+      overallConfidence = 'UNMATCHED';
+      confidenceBreakdown.unmatched++;
+    }
+
+    if (rowMatchedAnyStep) {
+      matchedRows++;
+    } else {
+      unmatchedRows++;
+    }
+
+    row['match_confidence'] = overallConfidence;
     enrichedData.push(row);
 
     // Limit preview features to first 2,000 for MapLibre rendering performance
@@ -230,8 +332,8 @@ export async function executeSpatialRecipe(
         },
         properties: {
           ...row,
-          _matched: matched,
-          _confidence: confidence,
+          _matched: rowMatchedAnyStep,
+          _confidence: overallConfidence,
         },
       });
     }
@@ -257,10 +359,13 @@ export async function executeSpatialRecipe(
     unmatchedRows,
     invalidCoordinates,
     executionTimeMs,
-    addedColumns,
+    addedColumns: allAddedColumns,
     recipeTitle: recipe.title,
-    referenceLayerName: referenceLayer.name,
+    referenceLayerName: preparedSteps.map((s) => s.referenceLayer.name).join(' + '),
     timestamp: new Date().toISOString(),
+    isChained: recipe.isChained,
+    stepCount: preparedSteps.length,
+    stepsDetail: preparedSteps.map((s) => `${s.name} (${s.operation})`),
     confidenceBreakdown,
   };
 

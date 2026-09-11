@@ -11,16 +11,19 @@ import {
   HelpCircle,
   Code2,
   Download,
+  GitMerge,
+  PackageOpen,
 } from 'lucide-react';
 import { useGeoBridgeStore } from '../../store/useGeoBridgeStore';
 
 export const DocumentationView: React.FC = () => {
   const { setAppMode } = useGeoBridgeStore();
-  const [activeSection, setActiveSection] = useState<'quickstart' | 'operations' | 'custom-tools' | 'privacy' | 'faq'>('quickstart');
+  const [activeSection, setActiveSection] = useState<'quickstart' | 'operations' | 'pipelines' | 'custom-tools' | 'privacy' | 'faq'>('quickstart');
 
   const navItems = [
     { id: 'quickstart', label: 'Quick Start Guide', icon: Zap },
     { id: 'operations', label: 'Spatial Operations Guide', icon: Compass },
+    { id: 'pipelines', label: 'Pipelines & Portable Bundles', icon: GitMerge },
     { id: 'custom-tools', label: 'Creating Custom Tools (GIS Guide)', icon: Layers },
     { id: 'privacy', label: 'Architecture & Privacy', icon: ShieldCheck },
     { id: 'faq', label: 'Troubleshooting & FAQ', icon: HelpCircle },
@@ -228,6 +231,68 @@ export const DocumentationView: React.FC = () => {
                     Example: Warehouse within 5km of Gulf Hurricane Belt &rarr; Flags "Underwriting Tier: Critical"
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: MULTI-STEP PIPELINES & BUNDLES */}
+          {activeSection === 'pipelines' && (
+            <div className="space-y-8 animate-in fade-in duration-200">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 mb-2 flex items-center space-x-2.5">
+                  <GitMerge className="w-6 h-6 text-indigo-600" />
+                  <span>Multi-Step Pipelines & Portable .georecipe Packages</span>
+                </h2>
+                <p className="text-slate-600 text-base leading-relaxed">
+                  Enterprise workflows often require multi-stage spatial operations and frictionless sharing between GIS specialists and business users.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 border border-slate-200 rounded-2xl space-y-4 bg-slate-50/50">
+                  <div className="flex items-center space-x-2.5">
+                    <GitMerge className="w-5 h-5 text-indigo-600" />
+                    <h3 className="text-lg font-bold text-slate-900">Multi-Step Chained Pipelines</h3>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Instead of running isolated operations, multi-stage pipelines allow chaining multiple spatial joins into a single execution pass:
+                  </p>
+                  <ul className="list-disc list-inside text-xs text-slate-700 space-y-1.5 pl-1">
+                    <li><strong>Stage 1:</strong> Point-in-Polygon sales territory and tax jurisdiction assignment.</li>
+                    <li><strong>Stage 2:</strong> Nearest logistics distribution center and highway mileage.</li>
+                    <li><strong>Stage 3:</strong> Proximity check against catastrophe flood/seismic hazard zones.</li>
+                  </ul>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    The background Web Worker processes all pipeline stages sequentially over your dataset in an optimized $O(\log M)$ loop without freezing the browser.
+                  </p>
+                </div>
+
+                <div className="p-6 border border-slate-200 rounded-2xl space-y-4 bg-slate-50/50">
+                  <div className="flex items-center space-x-2.5">
+                    <PackageOpen className="w-5 h-5 text-indigo-600" />
+                    <h3 className="text-lg font-bold text-slate-900">Portable .georecipe Packages</h3>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Overcome enterprise handover friction with self-contained bundle files:
+                  </p>
+                  <ul className="list-disc list-inside text-xs text-slate-700 space-y-1.5 pl-1">
+                    <li><strong>Embedded GeoJSON:</strong> All referenced boundary and facility layers are packed inside the <code>.georecipe</code> JSON file.</li>
+                    <li><strong>Zero Configuration:</strong> Business users simply drag and drop the bundle into the portal.</li>
+                    <li><strong>IndexedDB Persistence:</strong> Layers and recipes automatically unpack into the user's local browser database.</li>
+                  </ul>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Export bundles from the Recipe Studio with one click; import them anywhere with zero setup.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-3">
+                <h4 className="text-sm font-bold text-indigo-950">
+                  Defensible Audit Trails & Remediation Reports
+                </h4>
+                <p className="text-xs text-indigo-900 leading-relaxed">
+                  Every enriched spreadsheet export generates a dual-sheet workbook containing both your enriched data and a comprehensive <code>Processing_Audit_Trail</code> documenting pipeline stages, recipe author, timestamps, and confidence breakdown. Unmatched records can be exported in one click to a dedicated Exceptions Workbook for immediate sales ops review.
+                </p>
               </div>
             </div>
           )}

@@ -21,6 +21,18 @@ export interface ReferenceLayer {
   featureCount: number;
 }
 
+export interface RecipeStep {
+  id: string;
+  name: string;
+  operation: SpatialOperationType;
+  referenceLayerId: string;
+  fieldMappings: FieldMapping[];
+  bufferRadiusKm?: number;
+  distanceUnit?: 'km' | 'miles';
+  includeDistanceField?: boolean;
+  distanceFieldName?: string;
+}
+
 export interface SpatialRecipe {
   id: string;
   title: string;
@@ -39,7 +51,25 @@ export interface SpatialRecipe {
   author?: string;
   createdAt: string;
   isPreset?: boolean;
+
+  // Chaining & Pipeline Support
+  isChained?: boolean;
+  steps?: RecipeStep[];
 }
+
+export interface GeoRecipeBundle {
+  format: 'geobridge-bundle';
+  version: '1.0.0';
+  exportedAt: string;
+  author?: string;
+  metadata?: {
+    notes?: string;
+    tags?: string[];
+  };
+  recipe: SpatialRecipe;
+  bundledLayers: ReferenceLayer[];
+}
+
 
 export type ConfidenceTier = 
   | 'HIGH_EXACT' 
@@ -72,6 +102,9 @@ export interface EnrichmentSummary {
   recipeTitle?: string;
   referenceLayerName?: string;
   timestamp?: string;
+  isChained?: boolean;
+  stepCount?: number;
+  stepsDetail?: string[];
   confidenceBreakdown?: {
     highExact: number;
     borderline: number;

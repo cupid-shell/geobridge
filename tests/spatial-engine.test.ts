@@ -1,4 +1,4 @@
-﻿import { detectCoordinates } from '../src/lib/spatial/column-detector';
+import { detectCoordinates } from '../src/lib/spatial/column-detector';
 import { executeSpatialRecipe } from '../src/lib/spatial/engine';
 import { sanitizeCoordinate, sanitizePostalCode } from '../src/lib/spatial/data-sanitizer';
 import { resolveZipToCoordinates } from '../src/lib/spatial/zip-resolver';
@@ -139,7 +139,66 @@ async function runTests() {
   assert(dirtyResult.summary.invalidCoordinates === 2, 'Identified all invalid coordinates');
   assert(dirtyResult.data[0].Assigned_Territory === 'Invalid Coordinates', 'Applied fallback "Invalid Coordinates"');
 
-  console.log('\nALL TESTS PASSED SUCCESSFULLY!\n');
+  console.log('\n--- TEST 8: Portable .georecipe Bundle (Export, Validate, Parse) ---');
+  const { createRecipeBundle, validateRecipeBundle, parseRecipeBundle } = await import('../src/lib/data/recipe-bundle');
+  const bundle = createRecipeBundle(territoryRecipe, PRESET_REFERENCE_LAYERS, {
+    author: 'Lead GIS Specialist',
+    notes: 'Q3 Enterprise Sales Territory Handover Package',
+  });
+
+  assert(bundle.format === 'geobridge-bundle', 'Bundle format is "geobridge-bundle"');
+  assert(bundle.version === '1.0.0', 'Bundle version is 1.0.0');
+  assert(bundle.bundledLayers.length === 1, 'Correctly bundled 1 referenced layer');
+  assert(bundle.bundledLayers[0].id === 'layer-us-sales-territories', 'Bundled target territory layer GeoJSON');
+
+  const bundleJson = JSON.stringify(bundle);
+  const parsedBundle = parseRecipeBundle(bundleJson);
+  assert(parsedBundle.recipe.id === territoryRecipe.id, 'Parsed recipe matches original recipe ID');
+  assert(parsedBundle.bundledLayers[0].geojson.type === 'FeatureCollection', 'Parsed layer has valid FeatureCollection');
+
+  const invalidValidation = validateRecipeBundle({ invalid: true });
+  assert(!invalidValidation.isValid, 'Correctly rejected invalid bundle structure');
+
+  console.log('\n--- TEST 9: Multi-Step Recipe Chaining (2-Stage Pipeline) ---');
+  const chainedRecipe = PRESET_RECIPES.find((r) => r.id === 'recipe-enterprise-pipeline')!;
+  assert(chainedRecipe !== undefined, 'Found chained recipe preset in PRESET_RECIPES');
+  assert(chainedRecipe.isChained === true, 'Chained recipe flag is true');
+  assert(chainedRecipe.steps?.length === 2, 'Chained recipe contains 2 steps');
+
+  const chainedResult = await executeSpatialRecipe({
+    recipe: chainedRecipe,
+    referenceLayers: PRESET_REFERENCE_LAYERS,
+    rows: SAMPLE_CUSTOMER_LEADS,
+    latColumn: 'latitude',
+    lngColumn: 'longitude',
+    fileName: 'sample_leads.csv',
+  });
+
+  assert(chainedResult.summary.totalRows === SAMPLE_CUSTOMER_LEADS.length, `Chained pipeline processed all ${SAMPLE_CUSTOMER_LEADS.length} rows`);
+  assert(chainedResult.summary.isChained === true, 'Summary reflects isChained = true');
+  assert(chainedResult.summary.stepCount === 2, 'Summary records stepCount = 2');
+  
+  // Verify Stage 1 columns exist (from Territory PIP)
+  assert(chainedResult.summary.addedColumns.includes('Assigned_Territory'), 'Pipeline appended Stage 1 column "Assigned_Territory"');
+  assert(chainedResult.summary.addedColumns.includes('Regional_Director'), 'Pipeline appended Stage 1 column "Regional_Director"');
+  
+  // Verify Stage 2 columns exist (from Nearest Hub)
+  assert(chainedResult.summary.addedColumns.includes('Closest_Distribution_Hub'), 'Pipeline appended Stage 2 column "Closest_Distribution_Hub"');
+  assert(chainedResult.summary.addedColumns.includes('distance_to_nearest_hub_miles'), 'Pipeline appended Stage 2 distance column');
+
+  // Verify row values from BOTH stages simultaneously on the same record
+  const seattleRecord = chainedResult.data.find((r) => r.city === 'Seattle');
+  assert(seattleRecord?.Assigned_Territory === 'Western Region', 'Seattle matched Stage 1 (Western Region)');
+  assert(typeof seattleRecord?.distance_to_nearest_hub_miles === 'number', 'Seattle calculated Stage 2 distance');
+  assert(seattleRecord?.Closest_Distribution_Hub !== 'None', `Seattle identified closest hub: ${seattleRecord?.Closest_Distribution_Hub}`);
+
+  console.log('\n--- TEST 10: Chained Pipeline Audit & Confidence Breakdown ---');
+  assert(chainedResult.summary.confidenceBreakdown !== undefined, 'Pipeline generated confidence breakdown');
+  assert(chainedResult.summary.confidenceBreakdown!.highExact > 0, `Recorded ${chainedResult.summary.confidenceBreakdown!.highExact} high exact pipeline matches`);
+  assert(chainedResult.summary.referenceLayerName.includes('US Regional Sales Territories'), 'Audit references Stage 1 layer');
+  assert(chainedResult.summary.referenceLayerName.includes('US Logistics Distribution Hubs'), 'Audit references Stage 2 layer');
+
+  console.log('\nALL 10 TESTS PASSED SUCCESSFULLY!\n');
 }
 
 runTests().catch((err) => {

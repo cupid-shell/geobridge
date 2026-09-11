@@ -11,8 +11,10 @@ import {
   Compass,
   FileCheck2,
   MapPin,
-  HelpCircle,
   FileSpreadsheet,
+  PackageOpen,
+  GitMerge,
+  HelpCircle,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useGeoBridgeStore } from '../../store/useGeoBridgeStore';
@@ -26,6 +28,7 @@ import {
 import { detectCoordinates } from '../../lib/spatial/column-detector';
 import { runSpatialCalculation } from '../../lib/spatial/spatial-worker-client';
 import { SAMPLE_CUSTOMER_LEADS } from '../../lib/data/presets';
+import { parseRecipeBundle } from '../../lib/data/recipe-bundle';
 import { PreviewMap } from '../map/PreviewMap';
 import { Tooltip } from '../common/Tooltip';
 import type { ColumnDetectionResult } from '../../types/recipe';
@@ -38,7 +41,10 @@ export const SelfServiceRunner: React.FC = () => {
     setSelectedRecipeId,
     lastResult,
     setLastResult,
+    importBundle,
   } = useGeoBridgeStore();
+
+  const [bundleNotification, setBundleNotification] = useState<string | null>(null);
 
   const [uploadedRows, setUploadedRows] = useState<Record<string, any>[] | null>(null);
   const [fileName, setFileName] = useState<string>('');
@@ -110,8 +116,25 @@ export const SelfServiceRunner: React.FC = () => {
     setSelectedLngCol(temp);
   };
 
+  const handleImportBundleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const bundle = parseRecipeBundle(text);
+      const res = await importBundle(bundle);
+      setBundleNotification(
+        `Imported recipe "${bundle.recipe.title}" and ${res.layersImported} reference layer(s) into IndexedDB!`
+      );
+      setTimeout(() => setBundleNotification(null), 6000);
+    } catch (err: any) {
+      alert('Failed to import .georecipe package: ' + err.message);
+    }
+  };
+
   const handleRunEnrichment = async () => {
-    if (!currentRecipe || !currentLayer || !uploadedRows) {
+    const isChained = Boolean(currentRecipe?.isChained && currentRecipe?.steps && currentRecipe.steps.length > 0);
+    if (!currentRecipe || (!isChained && !currentLayer) || !uploadedRows) {
       alert('Please upload a file and select a valid spatial recipe.');
       return;
     }
@@ -134,6 +157,7 @@ export const SelfServiceRunner: React.FC = () => {
       const result = await runSpatialCalculation({
         recipe: currentRecipe,
         referenceLayer: currentLayer,
+        referenceLayers: referenceLayers,
         rows: uploadedRows,
         latColumn: inputMode === 'coordinates' ? selectedLatCol : undefined,
         lngColumn: inputMode === 'coordinates' ? selectedLngCol : undefined,
@@ -173,6 +197,24 @@ export const SelfServiceRunner: React.FC = () => {
         {/* Quick Sample Actions with Hover Popups */}
         <div className="flex items-center space-x-3 shrink-0">
           <Tooltip
+            title="Import .georecipe Bundle"
+            content="Load a self-contained recipe package (.georecipe) with embedded reference layers."
+            howToUse="Click to pick a .georecipe file handed over from your GIS specialist."
+            position="bottom"
+          >
+            <label className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-bold rounded-xl border border-indigo-200 shadow-sm transition-all hover:shadow cursor-pointer">
+              <PackageOpen className="w-4 h-4 text-indigo-600" />
+              <span>Import Bundle</span>
+              <input
+                type="file"
+                accept=".georecipe,.json"
+                onChange={handleImportBundleFile}
+                className="hidden"
+              />
+            </label>
+          </Tooltip>
+
+          <Tooltip
             title="Download Demo Workbook"
             content="20 realistic enterprise accounts with Latitude, Longitude, and customer revenue metrics across all US regions."
             howToUse="Click to download the demo file to your machine, then drag it into Step 2."
@@ -205,6 +247,21 @@ export const SelfServiceRunner: React.FC = () => {
           </Tooltip>
         </div>
       </div>
+
+      {bundleNotification && (
+        <div className="bg-indigo-50 border border-indigo-200 text-indigo-900 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <PackageOpen className="w-4 h-4 text-indigo-600" />
+            <span>{bundleNotification}</span>
+          </div>
+          <button
+            onClick={() => setBundleNotification(null)}
+            className="text-indigo-500 hover:text-indigo-800 text-xs font-bold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
         
@@ -249,42 +306,97 @@ export const SelfServiceRunner: React.FC = () => {
             </select>
 
             {currentRecipe && (
-              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-2.5">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
                 <p className="text-xs text-slate-600 font-medium leading-relaxed">
                   {currentRecipe.description}
                 </p>
 
-                <div className="pt-2 border-t border-slate-200 flex flex-wrap gap-1.5">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block w-full mb-1">
-                    Appends to each row:
-                  </span>
-                  {currentRecipe.fieldMappings.map((m, idx) => (
-                    <Tooltip
-                      key={idx}
-                      title={`Field: ${m.targetField}`}
-                      content={`Extracts "${m.sourceField}" from ${currentLayer?.name}. If outside boundary, defaults to "${m.fallbackValue ?? 'Unassigned'}".`}
-                      position="top"
-                    >
-                      <span className="px-2.5 py-0.5 bg-emerald-100/90 text-emerald-900 border border-emerald-200 rounded-md font-mono text-xs font-bold cursor-help">
-                        +{m.targetField}
+                {currentRecipe.isChained && currentRecipe.steps ? (
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
+                    <div className="flex items-center space-x-1.5 text-indigo-700">
+                      <GitMerge className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">
+                        Chained Pipeline ({currentRecipe.steps.length} Stages)
                       </span>
-                    </Tooltip>
-                  ))}
-                  {currentRecipe.operation === 'nearest_neighbor' && currentRecipe.includeDistanceField && (
-                    <Tooltip
-                      title="Distance Column"
-                      content={`Calculates distance in ${currentRecipe.distanceUnit || 'miles'} to closest facility point.`}
-                      position="top"
-                    >
-                      <span className="px-2.5 py-0.5 bg-blue-100/90 text-blue-900 border border-blue-200 rounded-md font-mono text-xs font-bold cursor-help">
-                        +{currentRecipe.distanceFieldName || 'distance'}
-                      </span>
-                    </Tooltip>
-                  )}
-                  <span className="px-2.5 py-0.5 bg-slate-200/80 text-slate-800 border border-slate-300 rounded-md font-mono text-xs font-bold">
-                    +match_confidence
-                  </span>
-                </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {currentRecipe.steps.map((step, idx) => {
+                        const stepLayer = referenceLayers.find((l) => l.id === step.referenceLayerId);
+                        return (
+                          <div
+                            key={step.id}
+                            className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800">
+                                Stage {idx + 1}: {step.name}
+                              </span>
+                              <span className="text-[10px] font-mono font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100">
+                                {step.operation === 'point_in_polygon'
+                                  ? 'Point-in-Polygon'
+                                  : step.operation === 'nearest_neighbor'
+                                  ? 'Nearest Neighbor'
+                                  : 'Buffer Intersect'}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {step.fieldMappings.map((m, mIdx) => (
+                                <Tooltip
+                                  key={mIdx}
+                                  title={`Field: ${m.targetField}`}
+                                  content={`Extracts "${m.sourceField}" from ${stepLayer?.name || 'layer'}. Fallback: "${m.fallbackValue ?? 'Unassigned'}".`}
+                                  position="top"
+                                >
+                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-mono text-[11px] font-bold cursor-help">
+                                    +{m.targetField}
+                                  </span>
+                                </Tooltip>
+                              ))}
+                              {step.operation === 'nearest_neighbor' && step.includeDistanceField && (
+                                <span className="px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded font-mono text-[11px] font-bold">
+                                  +{step.distanceFieldName || 'distance'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-2 border-t border-slate-200 flex flex-wrap gap-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block w-full mb-1">
+                      Appends to each row:
+                    </span>
+                    {currentRecipe.fieldMappings.map((m, idx) => (
+                      <Tooltip
+                        key={idx}
+                        title={`Field: ${m.targetField}`}
+                        content={`Extracts "${m.sourceField}" from ${currentLayer?.name}. If outside boundary, defaults to "${m.fallbackValue ?? 'Unassigned'}".`}
+                        position="top"
+                      >
+                        <span className="px-2.5 py-0.5 bg-emerald-100/90 text-emerald-900 border border-emerald-200 rounded-md font-mono text-xs font-bold cursor-help">
+                          +{m.targetField}
+                        </span>
+                      </Tooltip>
+                    ))}
+                    {currentRecipe.operation === 'nearest_neighbor' && currentRecipe.includeDistanceField && (
+                      <Tooltip
+                        title="Distance Column"
+                        content={`Calculates distance in ${currentRecipe.distanceUnit || 'miles'} to closest facility point.`}
+                        position="top"
+                      >
+                        <span className="px-2.5 py-0.5 bg-blue-100/90 text-blue-900 border border-blue-200 rounded-md font-mono text-xs font-bold cursor-help">
+                          +{currentRecipe.distanceFieldName || 'distance'}
+                        </span>
+                      </Tooltip>
+                    )}
+                    <span className="px-2.5 py-0.5 bg-slate-200/80 text-slate-800 border border-slate-300 rounded-md font-mono text-xs font-bold">
+                      +match_confidence
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

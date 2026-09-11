@@ -1,4 +1,4 @@
-﻿import Dexie, { type Table } from 'dexie';
+import Dexie, { type Table } from 'dexie';
 import type { SpatialRecipe, ReferenceLayer } from '../../types/recipe';
 import { PRESET_RECIPES, PRESET_REFERENCE_LAYERS } from '../data/presets';
 
@@ -40,17 +40,9 @@ export async function initDatabase(): Promise<{ recipes: SpatialRecipe[]; layers
   }
 
   try {
-    const existingRecipeCount = await db.recipes.count();
-    if (existingRecipeCount === 0) {
-      // Seed preset recipes
-      await db.recipes.bulkPut(PRESET_RECIPES.map((r) => ({ ...r, updatedAt: Date.now() })));
-    }
-
-    const existingLayerCount = await db.layers.count();
-    if (existingLayerCount === 0) {
-      // Seed preset layers
-      await db.layers.bulkPut(PRESET_REFERENCE_LAYERS.map((l) => ({ ...l, isPreset: true, updatedAt: Date.now() })));
-    }
+    // Ensure current preset recipes and layers are seeded/updated without affecting custom user items
+    await db.recipes.bulkPut(PRESET_RECIPES.map((r) => ({ ...r, updatedAt: Date.now() })));
+    await db.layers.bulkPut(PRESET_REFERENCE_LAYERS.map((l) => ({ ...l, isPreset: true, updatedAt: Date.now() })));
 
     const recipes = await db.recipes.toArray();
     const layers = await db.layers.toArray();

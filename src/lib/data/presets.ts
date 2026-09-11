@@ -1,4 +1,4 @@
-﻿import type { ReferenceLayer, SpatialRecipe } from '../../types/recipe';
+import type { ReferenceLayer, SpatialRecipe } from '../../types/recipe';
 import type { FeatureCollection } from 'geojson';
 
 export const US_SALES_TERRITORIES_GEOJSON: FeatureCollection = {
@@ -394,6 +394,70 @@ export const PRESET_RECIPES: SpatialRecipe[] = [
         sourceField: 'required_contingency',
         targetField: 'Mandatory_Mitigation_Protocol',
         fallbackValue: 'None',
+      },
+    ],
+  },
+  {
+    id: 'recipe-enterprise-pipeline',
+    title: 'Enterprise Territory & Logistics Pipeline (Multi-Step)',
+    description: 'Chained 2-stage workflow: First assigns sales territory and regional director (Point-in-Polygon), then computes routing code and distance to the closest distribution hub (Nearest Neighbor).',
+    category: 'Sales & Ops',
+    operation: 'point_in_polygon',
+    referenceLayerId: 'layer-us-sales-territories',
+    isPreset: true,
+    createdAt: '2026-01-01',
+    author: 'Chief Geospatial Architect',
+    isChained: true,
+    fieldMappings: [],
+    steps: [
+      {
+        id: 'step-1-territory',
+        name: 'Sales Territory Assignment',
+        operation: 'point_in_polygon',
+        referenceLayerId: 'layer-us-sales-territories',
+        fieldMappings: [
+          {
+            sourceField: 'territory_name',
+            targetField: 'Assigned_Territory',
+            fallbackValue: 'Unassigned',
+          },
+          {
+            sourceField: 'regional_director',
+            targetField: 'Regional_Director',
+            fallbackValue: 'Unassigned',
+          },
+          {
+            sourceField: 'tax_compliance',
+            targetField: 'Tax_Jurisdiction',
+            fallbackValue: 'Standard Rate',
+          },
+        ],
+      },
+      {
+        id: 'step-2-logistics',
+        name: 'Nearest Distribution Center & Routing',
+        operation: 'nearest_neighbor',
+        referenceLayerId: 'layer-distribution-hubs',
+        distanceUnit: 'miles',
+        includeDistanceField: true,
+        distanceFieldName: 'distance_to_nearest_hub_miles',
+        fieldMappings: [
+          {
+            sourceField: 'hub_name',
+            targetField: 'Closest_Distribution_Hub',
+            fallbackValue: 'None',
+          },
+          {
+            sourceField: 'hub_code',
+            targetField: 'Facility_Routing_Code',
+            fallbackValue: 'N/A',
+          },
+          {
+            sourceField: 'facility_type',
+            targetField: 'Dispatch_Mode',
+            fallbackValue: 'Standard Carrier',
+          },
+        ],
       },
     ],
   },

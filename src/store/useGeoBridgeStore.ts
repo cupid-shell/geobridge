@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { EnrichmentResult, ReferenceLayer, SpatialRecipe } from '../types/recipe';
 import { PRESET_RECIPES, PRESET_REFERENCE_LAYERS } from '../lib/data/presets';
 import {
@@ -27,6 +27,7 @@ interface GeoBridgeState {
   deleteRecipe: (id: string) => Promise<void>;
   addReferenceLayer: (layer: ReferenceLayer) => Promise<void>;
   deleteReferenceLayer: (id: string) => Promise<void>;
+  importBundle: (bundle: import('../types/recipe').GeoRecipeBundle) => Promise<{ recipeId: string; layersImported: number }>;
   resetToDefaults: () => Promise<void>;
 }
 
@@ -84,6 +85,34 @@ export const useGeoBridgeStore = create<GeoBridgeState>((set, get) => {
       const updated = get().referenceLayers.filter((l) => l.id !== id);
       set({ referenceLayers: updated });
       await dbDeleteLayer(id);
+    },
+
+    importBundle: async (bundle) => {
+      for (const layer of bundle.bundledLayers) {
+        await dbSaveLayer(layer);
+      }
+      const existingLayerIds = new Set(bundle.bundledLayers.map((l) => l.id));
+      const mergedLayers = [
+        ...bundle.bundledLayers,
+        ...get().referenceLayers.filter((l) => !existingLayerIds.has(l.id)),
+      ];
+
+      await dbSaveRecipe(bundle.recipe);
+      const mergedRecipes = [
+        bundle.recipe,
+        ...get().recipes.filter((r) => r.id !== bundle.recipe.id),
+      ];
+
+      set({
+        referenceLayers: mergedLayers,
+        recipes: mergedRecipes,
+        selectedRecipeId: bundle.recipe.id,
+      });
+
+      return {
+        recipeId: bundle.recipe.id,
+        layersImported: bundle.bundledLayers.length,
+      };
     },
 
     resetToDefaults: async () => {

@@ -1,4 +1,4 @@
-﻿import Papa from 'papaparse';
+import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import type { EnrichmentSummary } from '../../types/recipe';
 
@@ -91,6 +91,8 @@ export function exportToExcel(
     const auditRows = [
       { Parameter: 'Recipe Title', Value: summary.recipeTitle || 'Spatial Enrichment' },
       { Parameter: 'Target Reference Layer', Value: summary.referenceLayerName || 'Authoritative Layer' },
+      { Parameter: 'Workflow Execution Mode', Value: summary.isChained ? `Multi-Step Pipeline (${summary.stepCount} Steps)` : 'Single Operation' },
+      ...(summary.stepsDetail ? [{ Parameter: 'Pipeline Steps', Value: summary.stepsDetail.join(' -> ') }] : []),
       { Parameter: 'Processing Timestamp', Value: summary.timestamp || new Date().toISOString() },
       { Parameter: 'Engine Version', Value: 'GeoBridge v1.0 (Flatbush R-Tree + In-Browser Turf)' },
       { Parameter: 'Total Rows Processed', Value: summary.totalRows },
