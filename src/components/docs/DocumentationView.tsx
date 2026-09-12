@@ -120,9 +120,14 @@ export const DocumentationView: React.FC = () => {
 
               {/* The Everyday Business Problem */}
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                <h3 className="text-xs font-bold text-slate-900">
-                  The Problem: Waiting Weeks for GIS & Engineering Backlogs
-                </h3>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 block mb-0.5">
+                    Workflow Friction
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                    The Problem: Waiting Weeks for GIS & Engineering Backlogs
+                  </h3>
+                </div>
                 <p className="text-xs text-slate-600 leading-relaxed font-normal">
                   If you work in Sales Operations, Logistics, Underwriting, or Marketing, you frequently manage spreadsheets with customer addresses, coordinates, or ZIP codes. But to answer essential business questions like:
                 </p>
@@ -151,10 +156,15 @@ export const DocumentationView: React.FC = () => {
 
               {/* The Solution */}
               <div className="p-4 bg-accent-50/50 rounded-xl border border-accent-200 space-y-2">
-                <h3 className="text-xs font-bold text-accent-950 flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-accent-600" />
-                  <span>The Solution: An Automated In-Browser Geographic VLOOKUP</span>
-                </h3>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block mb-0.5">
+                    Instant Automation
+                  </span>
+                  <h3 className="text-base font-extrabold text-accent-950 tracking-tight flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
+                    <span>The Solution: An Automated In-Browser Geographic VLOOKUP</span>
+                  </h3>
+                </div>
                 <p className="text-xs text-slate-700 leading-relaxed font-normal">
                   Think of GeoBridge as an intelligent <strong>geographic VLOOKUP</strong>. You drop in your existing Excel file, choose what information you want to add, and GeoBridge matches each row to official geographic boundaries in seconds — 100% inside your web browser with zero data leaving your computer.
                 </p>
@@ -162,9 +172,14 @@ export const DocumentationView: React.FC = () => {
 
               {/* Before vs After Matrix */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-900">
-                  Spreadsheet Transformation: Before vs After GeoBridge
-                </h3>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-0.5">
+                    Visual Matrix
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                    Spreadsheet Transformation: Before vs After GeoBridge
+                  </h3>
+                </div>
                 <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
                   <table className="w-full text-left text-xs">
                     <thead>
@@ -226,30 +241,45 @@ export const DocumentationView: React.FC = () => {
               {/* Steps */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-surface-subtle rounded-xl border border-surface-border space-y-2">
-                  <div className="w-7 h-7 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                    1
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      01
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-accent-700">
+                      Step 1
+                    </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-xs">Choose Your Goal</h3>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">Choose Your Goal</h3>
                   <p className="text-xs text-slate-500 leading-relaxed font-normal">
                     Select a business goal from the visual cards: <em>Assign Sales Territories</em>, <em>Find Closest Warehouse</em>, <em>Screen Hazard Risk</em>, or <em>Combined Rule</em>.
                   </p>
                 </div>
 
                 <div className="p-4 bg-surface-subtle rounded-xl border border-surface-border space-y-2">
-                  <div className="w-7 h-7 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                    2
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      02
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-accent-700">
+                      Step 2
+                    </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-xs">Drop Your Spreadsheet</h3>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">Drop Your Spreadsheet</h3>
                   <p className="text-xs text-slate-500 leading-relaxed font-normal">
                     Drag and drop your Excel (<code>.xlsx</code>, <code>.xls</code>) or CSV file. Latitude/Longitude or US ZIP code columns are detected automatically.
                   </p>
                 </div>
 
                 <div className="p-4 bg-surface-subtle rounded-xl border border-surface-border space-y-2">
-                  <div className="w-7 h-7 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                    3
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      03
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-accent-700">
+                      Step 3
+                    </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-xs">Click Add & Download</h3>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">Click Add & Download</h3>
                   <p className="text-xs text-slate-500 leading-relaxed font-normal">
                     Click <strong>Add Boundary Data to Spreadsheet</strong>. Review the enriched table and click <strong>Export Enriched Excel (.xlsx)</strong>.
                   </p>
@@ -295,9 +325,14 @@ export const DocumentationView: React.FC = () => {
               <div className="space-y-4">
                 {/* Column Requirements */}
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                  <h3 className="text-xs font-bold text-slate-900">
-                    What location columns do I need in my spreadsheet?
-                  </h3>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-0.5">
+                      Input Columns
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                      What location columns do I need in my spreadsheet?
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-600 font-normal">
                     You only need <strong>one</strong> of the two following options:
                   </p>
@@ -326,9 +361,14 @@ export const DocumentationView: React.FC = () => {
 
                 {/* Automatic Sanitation Protections */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-900">
-                    Common Excel Traps GeoBridge Solves Automatically
-                  </h3>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block mb-0.5">
+                      Automated Healing
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                      Common Excel Traps GeoBridge Solves Automatically
+                    </h3>
+                  </div>
                   
                   <div className="grid grid-cols-1 gap-2.5">
                     <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
@@ -385,7 +425,7 @@ export const DocumentationView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Building2 className="w-4 h-4 text-accent-600" />
-                      <h3 className="text-xs font-bold text-slate-900">
+                      <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                         1. Sales Operations & Inbound Lead Routing
                       </h3>
                     </div>
@@ -407,7 +447,7 @@ export const DocumentationView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Truck className="w-4 h-4 text-accent-600" />
-                      <h3 className="text-xs font-bold text-slate-900">
+                      <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                         2. Supply Chain Logistics & Warehouse Mileage
                       </h3>
                     </div>
@@ -429,7 +469,7 @@ export const DocumentationView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <ShieldAlert className="w-4 h-4 text-accent-600" />
-                      <h3 className="text-xs font-bold text-slate-900">
+                      <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                         3. Commercial Insurance & Risk Underwriting
                       </h3>
                     </div>
@@ -529,7 +569,7 @@ export const DocumentationView: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  <h3 className="text-xs font-bold text-slate-900">Zero Server Data Egress</h3>
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Zero Server Data Egress</h3>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     When you upload an Excel spreadsheet, the file is read strictly within your browser's local memory using WebAssembly. No customer names, phone numbers, revenues, or coordinates are ever uploaded or transmitted to any remote cloud server.
                   </p>
@@ -537,7 +577,7 @@ export const DocumentationView: React.FC = () => {
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                   <CheckCircle2 className="w-5 h-5 text-accent-600" />
-                  <h3 className="text-xs font-bold text-slate-900">Zero Cloud Database Storage</h3>
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Zero Cloud Database Storage</h3>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     There are no remote databases, analytics trackers, or server-side logs. Your custom boundary files are stored securely in your browser's local IndexedDB sandbox and are never accessible to third parties.
                   </p>
@@ -545,8 +585,8 @@ export const DocumentationView: React.FC = () => {
               </div>
 
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                <h4 className="text-xs font-bold text-slate-900">
-                  Compliance Certification
+                <h4 className="text-base font-extrabold text-slate-900 tracking-tight">
+                  Enterprise Compliance Certification
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed font-normal">
                   Because no data leaves your workstation, GeoBridge complies with enterprise security guidelines, GDPR, HIPAA, and proprietary customer non-disclosure agreements without requiring lengthy Data Processing Agreements (DPA) or cloud vendor assessments.
@@ -570,30 +610,42 @@ export const DocumentationView: React.FC = () => {
 
               <div className="space-y-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">1</span>
-                    <span>Export Reference Boundaries from ArcGIS or QGIS</span>
-                  </h3>
+                  <div className="flex items-center space-x-2.5 mb-1">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black shrink-0">
+                      01
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                      Export Reference Boundaries from ArcGIS or QGIS
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     Export your official territory polygons, hub pins, or hazard corridors as GeoJSON FeatureCollections using standard WGS84 (EPSG:4326) coordinates with clean property names (e.g. <code>territory_name</code>, <code>director</code>).
                   </p>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">2</span>
-                    <span>Build the Matching Rule in Template Builder</span>
-                  </h3>
+                  <div className="flex items-center space-x-2.5 mb-1">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black shrink-0">
+                      02
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                      Build the Matching Rule in Template Builder
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     Open the <strong>Template Builder (GIS)</strong> tab, upload your GeoJSON file, map GeoJSON attributes to target spreadsheet columns, configure fallback values for outside coordinates, and test the rule.
                   </p>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">3</span>
-                    <span>Package as a .georecipe Bundle File</span>
-                  </h3>
+                  <div className="flex items-center space-x-2.5 mb-1">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black shrink-0">
+                      03
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                      Package as a .georecipe Bundle File
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     Click <strong>Export Package (.georecipe)</strong> to generate a portable bundle containing your rule schema and all embedded boundary geometries. Hand this file to your business users—they can drag it into the portal and start matching immediately.
                   </p>

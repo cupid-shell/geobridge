@@ -359,15 +359,18 @@ export const RecipeStudio: React.FC = () => {
       {/* Studio Command Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-surface-border">
         <div>
+          <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block mb-0.5">
+            GIS Engineering
+          </span>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-normal">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               GIS Recipe Studio
             </h1>
             <Badge variant="neutral" size="sm">
               Authoring Deck
             </Badge>
           </div>
-          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed">
             Author boundary match logic, facility proximity joins, and column schemas for non-technical users.
           </p>
         </div>
@@ -414,7 +417,10 @@ export const RecipeStudio: React.FC = () => {
             <CardHeader className="pb-4 border-b border-surface-border">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base font-bold text-slate-900">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                    Rule Definition
+                  </span>
+                  <CardTitle className="text-base font-extrabold text-slate-900 tracking-tight">
                     Recipe Architecture
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -609,10 +615,13 @@ export const RecipeStudio: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-xs font-bold text-slate-900">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block mb-0.5">
+                          Schema Configuration
+                        </span>
+                        <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                           Field Output Mappings
                         </h3>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           Map source polygon attributes into target spreadsheet column names.
                         </p>
                       </div>
@@ -691,11 +700,14 @@ export const RecipeStudio: React.FC = () => {
                 <div className="space-y-5 pt-4 border-t border-surface-border">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
-                        <GitMerge className="w-3.5 h-3.5 text-accent-600" />
+                      <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block mb-0.5">
+                        Sequential Execution
+                      </span>
+                      <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center space-x-1.5">
+                        <GitMerge className="w-4 h-4 text-accent-600" />
                         <span>Pipeline Execution Stages ({pipelineSteps.length})</span>
                       </h3>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-xs text-slate-500">
                         Executed sequentially in a single pass by the Web Worker.
                       </p>
                     </div>
@@ -870,9 +882,14 @@ export const RecipeStudio: React.FC = () => {
           <Card>
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900">
-                  Published Recipes ({recipes.length})
-                </CardTitle>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                    Registry
+                  </span>
+                  <CardTitle className="text-base font-extrabold text-slate-900 tracking-tight">
+                    Published Recipes ({recipes.length})
+                  </CardTitle>
+                </div>
                 <span className="text-[11px] text-slate-400 font-medium">Ready in Self-Service Portal</span>
               </div>
             </CardHeader>
@@ -940,11 +957,18 @@ export const RecipeStudio: React.FC = () => {
           {/* Upload Custom Reference Layer */}
           <Card>
             <CardHeader className="pb-3 border-b border-surface-border">
-              <div className="flex items-center space-x-2">
-                <Layers className="w-4 h-4 text-slate-600" />
-                <CardTitle className="text-sm font-bold text-slate-900">
-                  Upload Reference Layer (GeoJSON)
-                </CardTitle>
+              <div className="flex items-center space-x-2.5">
+                <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs shrink-0">
+                  <Layers className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                    Layer Ingestion
+                  </span>
+                  <CardTitle className="text-base font-extrabold text-slate-900 tracking-tight">
+                    Upload Reference Layer (GeoJSON)
+                  </CardTitle>
+                </div>
               </div>
             </CardHeader>
 
@@ -987,10 +1011,10 @@ export const RecipeStudio: React.FC = () => {
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                    Active Reference Layer
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                    Active Layer Preview
                   </span>
-                  <CardTitle className="text-sm font-bold text-slate-900 mt-0.5">
+                  <CardTitle className="text-base font-extrabold text-slate-900 tracking-tight mt-0.5">
                     {activeLayer?.name}
                   </CardTitle>
                 </div>

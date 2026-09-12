@@ -29,7 +29,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => (
   <h3
-    className={`text-sm font-bold text-slate-900 tracking-normal ${className}`}
+    className={`text-base font-extrabold text-slate-900 ${className}`}
     {...props}
   >
     {children}

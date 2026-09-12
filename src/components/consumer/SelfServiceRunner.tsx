@@ -30,7 +30,7 @@ import { parseRecipeBundle } from '../../lib/data/recipe-bundle';
 import { PreviewMap } from '../map/PreviewMap';
 import { Tooltip } from '../common/Tooltip';
 import { Button } from '../ui/Button';
-import { Card, CardHeader, CardTitle } from '../ui/Card';
+import { Card, CardHeader } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { DataTable } from '../ui/DataTable';
@@ -40,30 +40,30 @@ const PRESET_GOALS = [
   {
     id: 'recipe-territory-assignment',
     title: 'Assign Sales Territories',
-    subtitle: 'Matches customer locations to regions and assigns account directors',
-    tag: 'Sales & Ops',
-    appendedFields: ['+Assigned_Territory', '+Regional_Director', '+Support_Tier'],
+    subtitle: 'Maps customer locations to regions and directors',
+    tag: 'Sales',
+    chips: ['+Assigned_Territory', '+Regional_Director'],
   },
   {
     id: 'recipe-nearest-hub',
     title: 'Find Closest Warehouse',
-    subtitle: 'Finds nearest distribution hub and calculates driving miles',
+    subtitle: 'Finds nearest distribution hub and driving miles',
     tag: 'Logistics',
-    appendedFields: ['+Closest_Hub', '+Routing_Code', '+Distance_mi'],
+    chips: ['+Closest_Hub', '+Distance_mi'],
   },
   {
     id: 'recipe-risk-zone-checker',
     title: 'Screen Flood & Hazard Risk',
-    subtitle: 'Checks if properties fall in flood zones or fault corridors',
-    tag: 'Risk & Insurance',
-    appendedFields: ['+Hazard_Zone', '+Risk_Tier', '+Surcharge_%'],
+    subtitle: 'Checks FEMA flood zones and fault lines',
+    tag: 'Risk',
+    chips: ['+Hazard_Zone', '+Risk_Tier'],
   },
   {
     id: 'recipe-enterprise-pipeline',
     title: 'Combined Territory + Hub Match',
-    subtitle: 'Runs two rules in one pass: assigns sales territory and nearest hub',
-    tag: 'Multi-Step Rule',
-    appendedFields: ['+Assigned_Territory', '+Regional_Director', '+Closest_Hub', '+Distance_mi'],
+    subtitle: 'Assigns territory and nearest hub in 1 pass',
+    tag: 'Multi-Step',
+    chips: ['+Territory', '+Closest_Hub', '+Distance_mi'],
   },
 ];
 
@@ -81,20 +81,20 @@ const SpreadsheetTransformationPreview: React.FC<SpreadsheetTransformationPrevie
   return (
     <div className="p-5 sm:p-6 space-y-6">
       {/* Explanation Banner */}
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 space-y-2">
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-accent-700 bg-accent-50 px-2.5 py-0.5 rounded border border-accent-200">
-            Automated Spreadsheet Matcher
+          <span className="text-[10px] font-black uppercase tracking-widest text-accent-700 bg-accent-50 border border-accent-200 px-2.5 py-0.5 rounded">
+            Live Transformation Preview
           </span>
-          <span className="text-[11px] font-mono text-slate-400">
-            Geographic VLOOKUP
+          <span className="text-xs font-mono text-slate-500 font-semibold">
+            Active Goal: {currentRecipeTitle}
           </span>
         </div>
-        <h3 className="text-base font-bold text-slate-900">
-          Your Existing Spreadsheet &rarr; Enriched with Official Location Data
+        <h3 className="text-lg font-black text-slate-900 leading-snug">
+          Existing Spreadsheet &rarr; Appended with Location Attributes
         </h3>
-        <p className="text-xs text-slate-600 leading-relaxed max-w-3xl font-normal">
-          GeoBridge matches each row in your Excel file to official GIS territory boundaries or facility pins. <strong>Your original columns remain 100% untouched</strong>, and new authoritative columns are appended on the right.
+        <p className="text-xs text-slate-500 font-normal">
+          Your original columns remain 100% untouched. New geographic fields are appended on the right.
         </p>
       </div>
 
@@ -227,29 +227,35 @@ const SpreadsheetTransformationPreview: React.FC<SpreadsheetTransformationPrevie
       </div>
 
       {/* 3 Step Workflow Graphic */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
-        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 1</span>
-          <h4 className="text-sm font-bold text-slate-900">Drop Your Spreadsheet</h4>
-          <p className="text-xs text-slate-500 leading-relaxed font-normal">
-            Excel (.xlsx, .xls) or CSV with coordinates or standard 5-digit US ZIP codes.
-          </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center space-x-3">
+          <span className="w-8 h-8 rounded-lg bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+            01
+          </span>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">Drop Spreadsheet</h4>
+            <p className="text-[11px] text-slate-500">Excel or CSV with coordinates or ZIP</p>
+          </div>
         </div>
 
-        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 2</span>
-          <h4 className="text-sm font-bold text-slate-900">Instant In-Browser Match</h4>
-          <p className="text-xs text-slate-500 leading-relaxed font-normal">
-            Matches rows against official boundaries in seconds without uploading rows anywhere.
-          </p>
+        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center space-x-3">
+          <span className="w-8 h-8 rounded-lg bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+            02
+          </span>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">Instant Match</h4>
+            <p className="text-[11px] text-slate-500">Matches official boundaries in seconds</p>
+          </div>
         </div>
 
-        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 3</span>
-          <h4 className="text-sm font-bold text-slate-900">Download Enriched File</h4>
-          <p className="text-xs text-slate-500 leading-relaxed font-normal">
-            Get your Excel file back with all new boundary and distance columns ready for reporting.
-          </p>
+        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center space-x-3">
+          <span className="w-8 h-8 rounded-lg bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+            03
+          </span>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">Download Excel</h4>
+            <p className="text-[11px] text-slate-500">Enriched file with new columns attached</p>
+          </div>
         </div>
       </div>
 
@@ -470,16 +476,19 @@ export const SelfServiceRunner: React.FC = () => {
       {/* Executive Command Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-surface-border">
         <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-normal">
-              Spreadsheet Location Matcher
-            </h1>
+          <div className="flex items-center space-x-2.5 mb-1.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-accent-700 bg-accent-50 border border-accent-200 px-2 py-0.5 rounded">
+              Self-Service GIS
+            </span>
             <Badge variant="neutral" size="sm">
-              100% In-Browser
+              100% Private In-Browser
             </Badge>
           </div>
-          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed">
-            Enrich customer and property spreadsheets with official territories, nearest warehouse mileage, and risk tiers with zero data egress.
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Spreadsheet Location Matcher
+          </h1>
+          <p className="text-sm text-slate-500 font-normal mt-1">
+            Enrich customer and property spreadsheets with official territories, nearest warehouse mileage, and risk tiers.
           </p>
         </div>
 
@@ -539,27 +548,27 @@ export const SelfServiceRunner: React.FC = () => {
 
       {/* Interactive Test Drive Hero Sandbox Banner */}
       <div className="bg-slate-900 text-white rounded-xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
-        <div className="space-y-1.5">
-          <div className="flex items-center space-x-2.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-accent-500/20 text-accent-300 border border-accent-500/30">
-              Interactive Test Drive
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-accent-500/20 text-accent-300 border border-accent-500/30">
+              Quick Test Drive
             </span>
-            <h2 className="text-base font-bold text-white">
-              New to GeoBridge? Test it with 1 click
+            <h2 className="text-base sm:text-lg font-black text-white">
+              Try with 20 Sample Customer Accounts
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
-            Click <strong>Run 1-Click Test Drive</strong> to immediately load 20 sample customer accounts and run boundary matching in real time. No file upload required.
+          <p className="text-xs text-slate-300 font-normal">
+            Click the button to test instant boundary matching without uploading any files.
           </p>
         </div>
         <div className="flex items-center space-x-2 shrink-0">
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={handleOneClickTestDrive}
             isLoading={isProcessing}
             leftIcon={<Sparkles className="w-3.5 h-3.5 text-accent-600" />}
-            className="bg-white text-slate-900 hover:bg-slate-100 font-semibold"
+            className="bg-white text-slate-900 hover:bg-slate-100 font-bold shadow-xs px-4"
           >
             Run 1-Click Test Drive
           </Button>
@@ -592,19 +601,24 @@ export const SelfServiceRunner: React.FC = () => {
           <Card>
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
-                    1
+                <div className="flex items-center space-x-2.5">
+                  <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black tracking-tight shrink-0 shadow-2xs">
+                    01
                   </span>
-                  <CardTitle className="text-sm font-bold text-slate-900">
-                    Choose Matching Goal
-                  </CardTitle>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                      Step 1 of 3
+                    </span>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+                      Choose Matching Goal
+                    </h3>
+                  </div>
                   <Tooltip
                     title="What is a Matching Goal?"
                     content="A predefined rule authored by GIS teams that determines what new data to add to your spreadsheet based on location (e.g. Sales Territory, Nearest Warehouse, or Hazard Risk)."
                     position="top"
                   >
-                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer ml-1" />
                   </Tooltip>
                 </div>
 
@@ -639,22 +653,38 @@ export const SelfServiceRunner: React.FC = () => {
                             {goal.title}
                           </span>
                           <span
-                            className={`text-[11px] font-medium px-2 py-0.5 rounded ${
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wide uppercase ${
                               isSelected
-                                ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                                : 'bg-surface-subtle text-slate-500 border border-surface-border'
+                                ? 'bg-slate-800 text-slate-200 border border-slate-700'
+                                : 'bg-surface-subtle text-slate-600 border border-surface-border'
                             }`}
                           >
                             {goal.tag}
                           </span>
                         </div>
                         <p
-                          className={`text-xs mt-1.5 leading-relaxed font-normal ${
+                          className={`text-xs mt-1 leading-relaxed ${
                             isSelected ? 'text-slate-300' : 'text-slate-500'
                           }`}
                         >
                           {goal.subtitle}
                         </p>
+                        {goal.chips && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {goal.chips.map((chip, cIdx) => (
+                              <span
+                                key={cIdx}
+                                className={`text-[11px] font-mono px-1.5 py-0.5 rounded border ${
+                                  isSelected
+                                    ? 'bg-slate-800/80 text-accent-200 border-slate-700'
+                                    : 'bg-surface-subtle text-slate-600 border-surface-border'
+                                }`}
+                              >
+                                {chip}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -680,13 +710,18 @@ export const SelfServiceRunner: React.FC = () => {
               </div>
 
               {currentRecipe && (
-                <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border space-y-2.5">
-                  <p className="text-xs text-slate-600 font-normal leading-relaxed">
-                    {currentRecipe.description}
-                  </p>
+                <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Rule Output Columns
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 font-mono">
+                      EPSG:4326
+                    </span>
+                  </div>
 
                   {currentRecipe.isChained && currentRecipe.steps ? (
-                    <div className="space-y-2 pt-2 border-t border-surface-border">
+                    <div className="space-y-2 pt-1.5 border-t border-surface-border">
                       <div className="flex items-center space-x-1.5 text-slate-700">
                         <GitMerge className="w-3.5 h-3.5 text-accent-600" />
                         <span className="text-xs font-semibold uppercase tracking-wider">
@@ -739,10 +774,7 @@ export const SelfServiceRunner: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="pt-2 border-t border-surface-border flex flex-wrap gap-1">
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block w-full mb-0.5">
-                        New Columns Appended
-                      </span>
+                    <div className="pt-1 border-t border-surface-border flex flex-wrap gap-1">
                       {currentRecipe.fieldMappings.map((m, idx) => (
                         <Tooltip
                           key={idx}
@@ -780,17 +812,22 @@ export const SelfServiceRunner: React.FC = () => {
           <Card>
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
-                    2
+                <div className="flex items-center space-x-2.5">
+                  <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black tracking-tight shrink-0 shadow-2xs">
+                    02
                   </span>
-                  <CardTitle className="text-sm font-bold text-slate-900">
-                    Upload Your Spreadsheet
-                  </CardTitle>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                      Step 2 of 3
+                    </span>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+                      Upload Your Spreadsheet
+                    </h3>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-slate-400">
+                <Badge variant="neutral" size="sm">
                   Excel / CSV
-                </span>
+                </Badge>
               </div>
             </CardHeader>
 
@@ -819,14 +856,14 @@ export const SelfServiceRunner: React.FC = () => {
                     <Upload className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-bold text-slate-900">
                       {fileName ? (
                         <span className="text-accent-700 font-mono">{fileName}</span>
                       ) : (
-                        'Drop spreadsheet or click to browse'
+                        'Drop spreadsheet here or click to browse'
                       )}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1 font-normal leading-relaxed">
+                    <p className="text-xs text-slate-500 mt-1 font-normal leading-relaxed">
                       Coordinates or postal codes are detected automatically
                     </p>
                   </div>
@@ -837,9 +874,9 @@ export const SelfServiceRunner: React.FC = () => {
                 <div className="flex items-center justify-between text-xs px-3 py-2 bg-surface-subtle text-slate-700 rounded-lg border border-surface-border">
                   <span className="flex items-center space-x-1.5 font-medium">
                     <FileCheck2 className="w-3.5 h-3.5 text-slate-600" />
-                    <span className="tabular-nums font-mono font-semibold text-slate-900">{uploadedRows.length.toLocaleString()}</span> rows loaded
+                    <span className="tabular-nums font-mono font-bold text-slate-900">{uploadedRows.length.toLocaleString()}</span> rows loaded
                   </span>
-                  <span className="text-xs text-slate-400 font-mono">100% Private (No Cloud Egress)</span>
+                  <span className="text-xs text-slate-400 font-mono">100% In-Browser</span>
                 </div>
               )}
             </div>
@@ -850,13 +887,18 @@ export const SelfServiceRunner: React.FC = () => {
             <Card className="animate-in fade-in duration-200">
               <CardHeader className="pb-3 border-b border-surface-border">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
-                      3
+                  <div className="flex items-center space-x-2.5">
+                    <span className="w-7 h-7 rounded-lg bg-slate-900 text-white inline-flex items-center justify-center text-xs font-black tracking-tight shrink-0 shadow-2xs">
+                      03
                     </span>
-                    <CardTitle className="text-sm font-bold text-slate-900">
-                      Confirm Location Columns
-                    </CardTitle>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                        Step 3 of 3
+                      </span>
+                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+                        Confirm Location Columns
+                      </h3>
+                    </div>
                   </div>
 
                   <SegmentedControl
@@ -1000,7 +1042,7 @@ export const SelfServiceRunner: React.FC = () => {
                     (inputMode === 'postal_code' && !selectedZipCol)
                   }
                   leftIcon={!isProcessing ? <Sparkles className="w-4 h-4 text-white" /> : undefined}
-                  className="w-full"
+                  className="w-full h-11 text-sm font-extrabold shadow-md bg-slate-900 hover:bg-slate-800 text-white transition-all cursor-pointer"
                 >
                   {isProcessing
                     ? `Adding Boundary Data (${progress?.processed || 0} / ${progress?.total || 0})...`
@@ -1166,19 +1208,28 @@ export const SelfServiceRunner: React.FC = () => {
           <Card className="overflow-hidden border-surface-border">
             <div className="px-5 py-3.5 border-b border-surface-border bg-surface-card flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <Globe className="w-4 h-4 text-slate-600" />
-                <h3 className="text-sm font-bold text-slate-900">
-                  {activeTab === 'preview'
-                    ? 'Spreadsheet Transformation Preview'
-                    : activeTab === 'map'
-                    ? 'Boundary Map Preview'
-                    : 'Enriched Spreadsheet Inspection'}
-                </h3>
-                {currentLayer && (
-                  <span className="hidden sm:inline-flex text-xs font-mono text-slate-400 border-l border-surface-border pl-2.5 ml-2.5">
-                    Layer: {currentLayer.name} ({currentLayer.featureCount} features)
+                <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs shrink-0">
+                  <Globe className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-accent-700 block leading-none mb-0.5">
+                    Interactive Workspace
                   </span>
-                )}
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-none">
+                      {activeTab === 'preview'
+                        ? 'Spreadsheet Transformation Preview'
+                        : activeTab === 'map'
+                        ? 'Boundary Map Preview'
+                        : 'Enriched Spreadsheet Inspection'}
+                    </h3>
+                    {currentLayer && (
+                      <span className="hidden sm:inline-flex text-xs font-mono text-slate-400 border-l border-surface-border pl-2.5 ml-2.5 leading-none">
+                        Layer: {currentLayer.name} ({currentLayer.featureCount} features)
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {!lastResult && !uploadedRows ? (
