@@ -302,14 +302,14 @@ export const PRESET_REFERENCE_LAYERS: ReferenceLayer[] = [
 export const PRESET_RECIPES: SpatialRecipe[] = [
   {
     id: 'recipe-territory-assignment',
-    title: 'Sales Territory & Account Executive Matcher',
-    description: 'Assigns customer locations to corporate sales regions and attaches the designated Regional Director and Support Tier.',
+    title: 'Assign Sales Territories & Account Managers',
+    description: 'Automatically matches customer addresses to official corporate territories. Appends 4 columns: Assigned Territory, Regional Director, Support Tier, and Response SLA Hours.',
     category: 'Sales & Ops',
     operation: 'point_in_polygon',
     referenceLayerId: 'layer-us-sales-territories',
     isPreset: true,
     createdAt: '2026-01-01',
-    author: 'GIS Strategy Lead',
+    author: 'Sales Operations',
     fieldMappings: [
       {
         sourceField: 'territory_name',
@@ -335,8 +335,8 @@ export const PRESET_RECIPES: SpatialRecipe[] = [
   },
   {
     id: 'recipe-nearest-hub',
-    title: 'Nearest Logistics Hub & Distance Estimator',
-    description: 'Calculates Euclidean road-approx distance to the closest fulfillment facility and appends the Hub Name, Code, and Capacity.',
+    title: 'Find Closest Warehouse & Driving Distance',
+    description: 'Identifies the nearest distribution hub for each location. Appends 4 columns: Closest Warehouse Name, Routing Code, Dispatch Carrier Type, and Straight-Line Distance in Miles.',
     category: 'Logistics',
     operation: 'nearest_neighbor',
     referenceLayerId: 'layer-distribution-hubs',
@@ -366,14 +366,14 @@ export const PRESET_RECIPES: SpatialRecipe[] = [
   },
   {
     id: 'recipe-risk-zone-checker',
-    title: 'Environmental Risk & Insurance Underwriting Tag',
-    description: 'Checks if commercial facilities or policyholder locations lie inside designated high-hazard flood/seismic zones.',
+    title: 'Screen Properties for Flood & Hurricane Risk',
+    description: 'Checks if your property addresses fall inside severe storm or earthquake corridors. Appends 4 columns: Hazard Zone Name, Risk Level Tier, Surcharge %, and Mitigation Requirements.',
     category: 'Risk & Compliance',
     operation: 'point_in_polygon',
     referenceLayerId: 'layer-environmental-hazard-zones',
     isPreset: true,
     createdAt: '2026-01-01',
-    author: 'Catastrophe Risk Modeler',
+    author: 'Risk & Underwriting Team',
     fieldMappings: [
       {
         sourceField: 'zone_name',
@@ -399,14 +399,14 @@ export const PRESET_RECIPES: SpatialRecipe[] = [
   },
   {
     id: 'recipe-enterprise-pipeline',
-    title: 'Enterprise Territory & Logistics Pipeline (Multi-Step)',
-    description: 'Chained 2-stage workflow: First assigns sales territory and regional director (Point-in-Polygon), then computes routing code and distance to the closest distribution hub (Nearest Neighbor).',
+    title: 'Complete Territory + Nearest Warehouse Match (Combined Rule)',
+    description: 'Runs two calculations in one step: first assigns sales territory and regional director, then calculates mileage to the nearest fulfillment hub.',
     category: 'Sales & Ops',
     operation: 'point_in_polygon',
     referenceLayerId: 'layer-us-sales-territories',
     isPreset: true,
     createdAt: '2026-01-01',
-    author: 'Chief Geospatial Architect',
+    author: 'Commercial Operations Lead',
     isChained: true,
     fieldMappings: [],
     steps: [

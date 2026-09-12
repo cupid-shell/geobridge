@@ -11,18 +11,18 @@ export const Header: React.FC = () => {
   const navOptions = [
     {
       value: 'consumer' as const,
-      label: 'Analysis Portal',
+      label: 'Spreadsheet Matcher',
       icon: <FileSpreadsheet className="w-3.5 h-3.5" />,
     },
     {
       value: 'studio' as const,
-      label: 'Recipe Studio',
+      label: 'Template Builder (GIS)',
       icon: <Wrench className="w-3.5 h-3.5" />,
       badge: recipes.length,
     },
     {
       value: 'docs' as const,
-      label: 'Documentation',
+      label: 'Guides & Help',
       icon: <BookOpen className="w-3.5 h-3.5" />,
     },
   ];
@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center space-x-3">
             <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 font-medium px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-md">
               <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-              <span>In-Browser Engine</span>
+              <span>100% Private (No Data Leaves Device)</span>
             </div>
 
             {/* Reset Defaults with Clean Popover */}

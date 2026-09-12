@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Download,
   RefreshCw,
-  Zap,
   Globe,
   Compass,
   FileCheck2,
@@ -37,6 +36,243 @@ import { SegmentedControl } from '../ui/SegmentedControl';
 import { DataTable } from '../ui/DataTable';
 import type { ColumnDetectionResult } from '../../types/recipe';
 
+const PRESET_GOALS = [
+  {
+    id: 'recipe-territory-assignment',
+    title: 'Assign Sales Territories',
+    subtitle: 'Matches customer locations to regions and assigns account directors',
+    tag: 'Sales & Ops',
+    appendedFields: ['+Assigned_Territory', '+Regional_Director', '+Support_Tier'],
+  },
+  {
+    id: 'recipe-nearest-hub',
+    title: 'Find Closest Warehouse',
+    subtitle: 'Finds nearest distribution hub and calculates driving miles',
+    tag: 'Logistics',
+    appendedFields: ['+Closest_Hub', '+Routing_Code', '+Distance_mi'],
+  },
+  {
+    id: 'recipe-risk-zone-checker',
+    title: 'Screen Flood & Hazard Risk',
+    subtitle: 'Checks if properties fall in flood zones or fault corridors',
+    tag: 'Risk & Insurance',
+    appendedFields: ['+Hazard_Zone', '+Risk_Tier', '+Surcharge_%'],
+  },
+  {
+    id: 'recipe-enterprise-pipeline',
+    title: 'Combined Territory + Hub Match',
+    subtitle: 'Runs two rules in one pass: assigns sales territory and nearest hub',
+    tag: 'Multi-Step Rule',
+    appendedFields: ['+Assigned_Territory', '+Regional_Director', '+Closest_Hub', '+Distance_mi'],
+  },
+];
+
+interface SpreadsheetTransformationPreviewProps {
+  currentRecipeTitle: string;
+  onTrySample: () => void;
+  isProcessing: boolean;
+}
+
+const SpreadsheetTransformationPreview: React.FC<SpreadsheetTransformationPreviewProps> = ({
+  currentRecipeTitle,
+  onTrySample,
+  isProcessing,
+}) => {
+  return (
+    <div className="p-5 sm:p-6 space-y-6">
+      {/* Explanation Banner */}
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-accent-700 bg-accent-50 px-2.5 py-0.5 rounded border border-accent-200">
+            Automated Spreadsheet Matcher
+          </span>
+          <span className="text-[11px] font-mono text-slate-400">
+            Geographic VLOOKUP
+          </span>
+        </div>
+        <h3 className="text-base font-bold text-slate-900">
+          Your Existing Spreadsheet &rarr; Enriched with Official Location Data
+        </h3>
+        <p className="text-xs text-slate-600 leading-relaxed max-w-3xl font-normal">
+          GeoBridge matches each row in your Excel file to official GIS territory boundaries or facility pins. <strong>Your original columns remain 100% untouched</strong>, and new authoritative columns are appended on the right.
+        </p>
+      </div>
+
+      {/* Visual Table Before vs After */}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex items-center space-x-1.5 text-slate-500 font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block" />
+              <span>Your Original Columns (Untouched)</span>
+            </span>
+            <span className="flex items-center space-x-1.5 text-accent-700 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-accent-600 inline-block" />
+              <span>New Columns Added by GeoBridge</span>
+            </span>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Active Goal: {currentRecipeTitle}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-100/70 font-semibold text-slate-600">
+                <th className="py-2.5 px-3">lead_id</th>
+                <th className="py-2.5 px-3">company_name</th>
+                <th className="py-2.5 px-3">city</th>
+                <th className="py-2.5 px-3">state</th>
+                <th className="py-2.5 px-3 font-mono">latitude</th>
+                <th className="py-2.5 px-3 font-mono">longitude</th>
+                {/* Enriched Columns */}
+                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 border-l-2 border-accent-400 font-mono">
+                  +Assigned_Territory
+                </th>
+                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                  +Account_Director
+                </th>
+                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                  +Closest_Hub
+                </th>
+                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                  +Distance_mi
+                </th>
+                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                  +Match_Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              <tr className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-001</td>
+                <td className="py-2.5 px-3 font-semibold text-slate-800">Apex Logistics</td>
+                <td className="py-2.5 px-3 text-slate-600">Seattle</td>
+                <td className="py-2.5 px-3 text-slate-600">WA</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">47.6062</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">-122.3321</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                  Western Region
+                </td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Sarah Lin</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Seattle Cargo Hub</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">4.2 mi</td>
+                <td className="py-2.5 px-3 bg-accent-50/40">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Exact Match
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-002</td>
+                <td className="py-2.5 px-3 font-semibold text-slate-800">Lone Star Distribution</td>
+                <td className="py-2.5 px-3 text-slate-600">Houston</td>
+                <td className="py-2.5 px-3 text-slate-600">TX</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">29.7604</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">-95.3698</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                  Southern Region
+                </td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Marcus Vance</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">DFW Regional Hub</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">238.5 mi</td>
+                <td className="py-2.5 px-3 bg-accent-50/40">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Exact Match
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-003</td>
+                <td className="py-2.5 px-3 font-semibold text-slate-800">Midwest Health Systems</td>
+                <td className="py-2.5 px-3 text-slate-600">Chicago</td>
+                <td className="py-2.5 px-3 text-slate-600">IL</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">41.8781</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">-87.6298</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                  Midwest Region
+                </td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Elena Rostova</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Chicago Central Hub</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">8.9 mi</td>
+                <td className="py-2.5 px-3 bg-accent-50/40">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Exact Match
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-004</td>
+                <td className="py-2.5 px-3 font-semibold text-slate-800">Empire Financial</td>
+                <td className="py-2.5 px-3 text-slate-600">New York</td>
+                <td className="py-2.5 px-3 text-slate-600">NY</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">40.7128</td>
+                <td className="py-2.5 px-3 font-mono text-slate-400">-74.0060</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                  Northeast Region
+                </td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">David Chen</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Newark Air Cargo</td>
+                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">11.8 mi</td>
+                <td className="py-2.5 px-3 bg-accent-50/40">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Exact Match
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 3 Step Workflow Graphic */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 1</span>
+          <h4 className="text-xs font-bold text-slate-900">Drop Your Spreadsheet</h4>
+          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+            Excel (.xlsx, .xls) or CSV with coordinates or standard 5-digit US ZIP codes.
+          </p>
+        </div>
+
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 2</span>
+          <h4 className="text-xs font-bold text-slate-900">Instant In-Browser Match</h4>
+          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+            Matches rows against official boundaries in seconds without uploading rows anywhere.
+          </p>
+        </div>
+
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 3</span>
+          <h4 className="text-xs font-bold text-slate-900">Download Enriched File</h4>
+          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+            Get your Excel file back with all new boundary and distance columns ready for reporting.
+          </p>
+        </div>
+      </div>
+
+      {/* 1-Click Interactive CTA */}
+      <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center space-x-2 text-xs text-slate-600">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>No account or setup required. Run 20 live customer rows in 1 second.</span>
+        </div>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={onTrySample}
+          isLoading={isProcessing}
+          leftIcon={<Sparkles className="w-4 h-4 text-white" />}
+        >
+          {isProcessing ? 'Processing...' : 'Try This Example (1-Click Test Drive)'}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const SelfServiceRunner: React.FC = () => {
   const {
     recipes,
@@ -59,7 +295,7 @@ export const SelfServiceRunner: React.FC = () => {
   const [selectedZipCol, setSelectedZipCol] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<{ processed: number; total: number } | null>(null);
-  const [activeTab, setActiveTab] = useState<'map' | 'table'>('map');
+  const [activeTab, setActiveTab] = useState<'preview' | 'map' | 'table'>('preview');
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
 
   const currentRecipe = recipes.find((r) => r.id === selectedRecipeId) || recipes[0];
@@ -85,6 +321,9 @@ export const SelfServiceRunner: React.FC = () => {
       }
 
       setLastResult(null);
+      if (activeTab === 'preview') {
+        setActiveTab('table');
+      }
     } catch (err: any) {
       alert(err.message || 'Error reading file');
     }
@@ -112,6 +351,48 @@ export const SelfServiceRunner: React.FC = () => {
     setSelectedZipCol('postal_code');
     setInputMode('coordinates');
     setLastResult(null);
+    if (activeTab === 'preview') {
+      setActiveTab('table');
+    }
+  };
+
+  const handleOneClickTestDrive = async () => {
+    setFileName('sample_us_customer_leads.csv');
+    setUploadedRows(SAMPLE_CUSTOMER_LEADS);
+    const det = detectCoordinates(SAMPLE_CUSTOMER_LEADS);
+    setDetection(det);
+    setSelectedLatCol('latitude');
+    setSelectedLngCol('longitude');
+    setSelectedZipCol('postal_code');
+    setInputMode('coordinates');
+
+    const isChained = Boolean(currentRecipe?.isChained && currentRecipe?.steps && currentRecipe.steps.length > 0);
+    if (!currentRecipe || (!isChained && !currentLayer)) {
+      return;
+    }
+
+    setIsProcessing(true);
+    setProgress({ processed: 0, total: SAMPLE_CUSTOMER_LEADS.length });
+    try {
+      const result = await runSpatialCalculation({
+        recipe: currentRecipe,
+        referenceLayer: currentLayer,
+        referenceLayers: referenceLayers,
+        rows: SAMPLE_CUSTOMER_LEADS,
+        latColumn: 'latitude',
+        lngColumn: 'longitude',
+        zipColumn: 'postal_code',
+        fileName: 'sample_us_customer_leads.csv',
+        onProgress: (proc, tot) => setProgress({ processed: proc, total: tot }),
+      });
+      setLastResult(result);
+      setActiveTab('table');
+    } catch (err: any) {
+      alert('Error during test drive: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+      setProgress(null);
+    }
   };
 
   const handleSwapCoordinates = () => {
@@ -128,23 +409,23 @@ export const SelfServiceRunner: React.FC = () => {
       const bundle = parseRecipeBundle(text);
       const res = await importBundle(bundle);
       setBundleNotification(
-        `Imported recipe "${bundle.recipe.title}" and ${res.layersImported} reference layer(s) into IndexedDB`
+        `Imported template "${bundle.recipe.title}" and ${res.layersImported} reference boundary layer(s)`
       );
       setTimeout(() => setBundleNotification(null), 6000);
     } catch (err: any) {
-      alert('Failed to import .georecipe package: ' + err.message);
+      alert('Failed to load template file: ' + err.message);
     }
   };
 
   const handleRunEnrichment = async () => {
     const isChained = Boolean(currentRecipe?.isChained && currentRecipe?.steps && currentRecipe.steps.length > 0);
     if (!currentRecipe || (!isChained && !currentLayer) || !uploadedRows) {
-      alert('Please upload a file and select a valid spatial recipe.');
+      alert('Please upload a spreadsheet and select a matching goal.');
       return;
     }
 
     if (inputMode === 'coordinates' && (!selectedLatCol || !selectedLngCol)) {
-      alert('Please select both Latitude and Longitude columns, or switch to Postal Code mode.');
+      alert('Please select both Latitude and Longitude columns, or switch to US ZIP Code mode.');
       return;
     }
 
@@ -157,7 +438,6 @@ export const SelfServiceRunner: React.FC = () => {
     setProgress({ processed: 0, total: uploadedRows.length });
 
     try {
-      // Execute via Web Worker with Flatbush spatial index
       const result = await runSpatialCalculation({
         recipe: currentRecipe,
         referenceLayer: currentLayer,
@@ -171,6 +451,7 @@ export const SelfServiceRunner: React.FC = () => {
       });
 
       setLastResult(result);
+      setActiveTab('table');
     } catch (err: any) {
       alert('Error during spatial calculation: ' + err.message);
     } finally {
@@ -191,28 +472,28 @@ export const SelfServiceRunner: React.FC = () => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Spatial Analysis Portal
+              Spreadsheet Location Matcher
             </h1>
             <Badge variant="neutral" size="sm">
-              v1.2 In-Browser
+              100% In-Browser
             </Badge>
           </div>
           <p className="text-sm text-slate-500 font-normal mt-1">
-            Enrich spreadsheet coordinates and postal codes with GIS boundaries 100% in-browser with zero cloud egress.
+            Enrich customer and property spreadsheets with official territories, nearest warehouse mileage, and risk tiers with zero data egress.
           </p>
         </div>
 
         {/* Global Action Toolbar */}
         <div className="flex items-center space-x-2.5 shrink-0">
           <Tooltip
-            title="Import .georecipe Bundle"
-            content="Load a self-contained recipe package (.georecipe) with embedded reference layers."
-            howToUse="Click to pick a .georecipe file handed over from your GIS specialist."
+            title="Load Template File (.georecipe)"
+            content="Load a custom matching template packaged by your GIS team with embedded boundary layers."
+            howToUse="Click to select a .georecipe file received from your GIS specialist."
             position="bottom"
           >
             <label className="inline-flex items-center space-x-2 px-3.5 py-2 bg-surface-card hover:bg-surface-subtle text-slate-700 text-xs font-semibold rounded-lg border border-surface-border shadow-2xs transition-colors cursor-pointer">
               <PackageOpen className="w-3.5 h-3.5 text-slate-500" />
-              <span>Import Package</span>
+              <span>Load Template File</span>
               <input
                 type="file"
                 accept=".georecipe,.json"
@@ -223,9 +504,9 @@ export const SelfServiceRunner: React.FC = () => {
           </Tooltip>
 
           <Tooltip
-            title="Download Demo Workbook"
-            content="20 realistic enterprise accounts with Latitude, Longitude, and revenue metrics across all US regions."
-            howToUse="Click to download the demo file to your machine, then drag it into the upload box."
+            title="Download Sample Excel File"
+            content="Download a 20-row customer leads file with coordinates and ZIP codes across the US."
+            howToUse="Download to your computer to inspect the exact column structure."
             position="bottom"
           >
             <a
@@ -234,14 +515,14 @@ export const SelfServiceRunner: React.FC = () => {
               className="inline-flex items-center space-x-2 px-3.5 py-2 bg-surface-card hover:bg-surface-subtle text-slate-700 text-xs font-semibold rounded-lg border border-surface-border shadow-2xs transition-colors"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Demo .xlsx</span>
+              <span>Download Sample File</span>
             </a>
           </Tooltip>
 
           <Tooltip
-            title="Quick In-Memory Load"
-            content="Simulates loading a 20-row customer dataset directly into browser memory."
-            howToUse="Click to test the entire spatial enrichment pipeline with 1 click."
+            title="Try Sample Data in Browser"
+            content="Loads 20 sample customer leads into memory for instant testing."
+            howToUse="Click to populate the upload box with realistic customer data."
             position="bottom"
           >
             <Button
@@ -250,13 +531,42 @@ export const SelfServiceRunner: React.FC = () => {
               onClick={handleLoadSample}
               leftIcon={<Sparkles className="w-3.5 h-3.5 text-accent-600" />}
             >
-              Quick Load
+              Try Sample Data (1-Click)
             </Button>
           </Tooltip>
         </div>
       </div>
 
-      {/* Bundle Import Notification */}
+      {/* Interactive Test Drive Hero Sandbox Banner */}
+      <div className="bg-slate-900 text-white rounded-xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent-500/20 text-accent-300 border border-accent-500/30">
+              Interactive Test Drive
+            </span>
+            <h2 className="text-sm font-bold text-white">
+              New to GeoBridge? Test it with 1 click
+            </h2>
+          </div>
+          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed font-normal">
+            Click <strong>Run 1-Click Test Drive</strong> to immediately load 20 sample customer accounts and run boundary matching in real time. No file upload required.
+          </p>
+        </div>
+        <div className="flex items-center space-x-2 shrink-0">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleOneClickTestDrive}
+            isLoading={isProcessing}
+            leftIcon={<Sparkles className="w-3.5 h-3.5 text-accent-600" />}
+            className="bg-white text-slate-900 hover:bg-slate-100 font-semibold"
+          >
+            Run 1-Click Test Drive
+          </Button>
+        </div>
+      </div>
+
+      {/* Template Import Notification */}
       {bundleNotification && (
         <div className="bg-accent-50/70 border border-accent-200 text-accent-950 px-4 py-3 rounded-lg text-xs font-medium flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -278,7 +588,7 @@ export const SelfServiceRunner: React.FC = () => {
         {/* Left Column: Configuration Deck (380px fixed width on desktop) */}
         <div className="w-full lg:w-[380px] shrink-0 space-y-4">
           
-          {/* Card 1: Select Recipe */}
+          {/* Card 1: Select Matching Goal */}
           <Card>
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
@@ -287,11 +597,11 @@ export const SelfServiceRunner: React.FC = () => {
                     1
                   </span>
                   <CardTitle className="text-sm font-bold text-slate-900">
-                    Spatial Recipe
+                    Choose Matching Goal
                   </CardTitle>
                   <Tooltip
-                    title="What is a Spatial Recipe?"
-                    content="A spatial recipe defines an automated calculation contract: matching points against boundary polygons, facility coordinates, or proximity buffers."
+                    title="What is a Matching Goal?"
+                    content="A predefined rule authored by GIS teams that determines what new data to add to your spreadsheet based on location (e.g. Sales Territory, Nearest Warehouse, or Hazard Risk)."
                     position="top"
                   >
                     <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
@@ -305,17 +615,69 @@ export const SelfServiceRunner: React.FC = () => {
             </CardHeader>
 
             <div className="p-4 space-y-3.5">
-              <select
-                value={selectedRecipeId}
-                onChange={(e) => setSelectedRecipeId(e.target.value)}
-                className="w-full bg-surface-card hover:bg-surface-subtle border border-surface-border rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent-600 transition-colors cursor-pointer"
-              >
-                {recipes.map((recipe) => (
-                  <option key={recipe.id} value={recipe.id}>
-                    {recipe.title}
-                  </option>
-                ))}
-              </select>
+              {/* Visual Preset Goal Cards */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold text-slate-600 block">
+                  Select a business goal:
+                </span>
+                <div className="grid grid-cols-1 gap-2">
+                  {PRESET_GOALS.map((goal) => {
+                    const isSelected = selectedRecipeId === goal.id;
+                    return (
+                      <button
+                        key={goal.id}
+                        type="button"
+                        onClick={() => setSelectedRecipeId(goal.id)}
+                        className={`w-full p-2.5 rounded-lg text-left transition-all border cursor-pointer ${
+                          isSelected
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
+                            : 'border-surface-border bg-surface-card hover:bg-surface-subtle text-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                            {goal.title}
+                          </span>
+                          <span
+                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                              isSelected
+                                ? 'bg-slate-800 text-slate-300 border border-slate-700'
+                                : 'bg-surface-subtle text-slate-500 border border-surface-border'
+                            }`}
+                          >
+                            {goal.tag}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-[11px] mt-1 leading-snug font-normal ${
+                            isSelected ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {goal.subtitle}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Dropdown for Custom / All Templates */}
+                <div className="pt-2 border-t border-surface-border space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-500 block">
+                    Or choose from all templates ({recipes.length} available):
+                  </label>
+                  <select
+                    value={selectedRecipeId}
+                    onChange={(e) => setSelectedRecipeId(e.target.value)}
+                    className="w-full bg-surface-card hover:bg-surface-subtle border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent-600 transition-colors cursor-pointer"
+                  >
+                    {recipes.map((recipe) => (
+                      <option key={recipe.id} value={recipe.id}>
+                        {recipe.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               {currentRecipe && (
                 <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border space-y-2.5">
@@ -328,7 +690,7 @@ export const SelfServiceRunner: React.FC = () => {
                       <div className="flex items-center space-x-1.5 text-slate-700">
                         <GitMerge className="w-3.5 h-3.5 text-accent-600" />
                         <span className="text-[11px] font-semibold uppercase tracking-wider">
-                          Chained Pipeline ({currentRecipe.steps.length} Stages)
+                          Combined Rule ({currentRecipe.steps.length} Stages)
                         </span>
                       </div>
 
@@ -346,9 +708,9 @@ export const SelfServiceRunner: React.FC = () => {
                                 </span>
                                 <Badge variant="info" size="sm">
                                   {step.operation === 'point_in_polygon'
-                                    ? 'PIP'
+                                    ? 'Boundary'
                                     : step.operation === 'nearest_neighbor'
-                                    ? 'Nearest'
+                                    ? 'Closest Pin'
                                     : 'Buffer'}
                                 </Badge>
                               </div>
@@ -356,7 +718,7 @@ export const SelfServiceRunner: React.FC = () => {
                                 {step.fieldMappings.map((m, mIdx) => (
                                   <Tooltip
                                     key={mIdx}
-                                    title={`Field: ${m.targetField}`}
+                                    title={`Column: ${m.targetField}`}
                                     content={`Extracts "${m.sourceField}" from ${stepLayer?.name || 'layer'}. Fallback: "${m.fallbackValue ?? 'Unassigned'}".`}
                                     position="top"
                                   >
@@ -379,12 +741,12 @@ export const SelfServiceRunner: React.FC = () => {
                   ) : (
                     <div className="pt-2 border-t border-surface-border flex flex-wrap gap-1">
                       <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block w-full mb-0.5">
-                        Enriched Attributes
+                        New Columns Appended
                       </span>
                       {currentRecipe.fieldMappings.map((m, idx) => (
                         <Tooltip
                           key={idx}
-                          title={`Field: ${m.targetField}`}
+                          title={`Column: ${m.targetField}`}
                           content={`Extracts "${m.sourceField}" from ${currentLayer?.name}. If outside boundary, defaults to "${m.fallbackValue ?? 'Unassigned'}".`}
                           position="top"
                         >
@@ -423,7 +785,7 @@ export const SelfServiceRunner: React.FC = () => {
                     2
                   </span>
                   <CardTitle className="text-sm font-bold text-slate-900">
-                    Input Spreadsheet
+                    Upload Your Spreadsheet
                   </CardTitle>
                 </div>
                 <span className="text-[11px] font-medium text-slate-400">
@@ -464,7 +826,7 @@ export const SelfServiceRunner: React.FC = () => {
                         'Drop spreadsheet or click to browse'
                       )}
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5 font-normal">
                       Coordinates or postal codes are detected automatically
                     </p>
                   </div>
@@ -477,7 +839,7 @@ export const SelfServiceRunner: React.FC = () => {
                     <FileCheck2 className="w-3.5 h-3.5 text-slate-600" />
                     <span className="tabular-nums font-mono font-semibold text-slate-900">{uploadedRows.length.toLocaleString()}</span> rows loaded
                   </span>
-                  <span className="text-[11px] text-slate-400 font-mono">100% In-Memory</span>
+                  <span className="text-[11px] text-slate-400 font-mono">100% Private (No Cloud Egress)</span>
                 </div>
               )}
             </div>
@@ -493,15 +855,15 @@ export const SelfServiceRunner: React.FC = () => {
                       3
                     </span>
                     <CardTitle className="text-sm font-bold text-slate-900">
-                      Location Resolution
+                      Confirm Location Columns
                     </CardTitle>
                   </div>
 
                   <SegmentedControl
                     size="sm"
                     options={[
-                      { value: 'coordinates', label: 'Coordinates' },
-                      { value: 'postal_code', label: 'Postal Code' },
+                      { value: 'coordinates', label: 'Coordinates (Lat/Lon)' },
+                      { value: 'postal_code', label: 'US ZIP Code' },
                     ]}
                     value={inputMode}
                     onChange={(v) => setInputMode(v as 'coordinates' | 'postal_code')}
@@ -514,7 +876,7 @@ export const SelfServiceRunner: React.FC = () => {
                   <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 text-xs text-amber-950 space-y-1">
                     <div className="font-semibold flex items-center space-x-1.5">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      <span>Data Sanitation Notice</span>
+                      <span>Data Notice</span>
                     </div>
                     {detection.warnings.map((w, i) => (
                       <p key={i} className="text-amber-800 text-[11px] font-normal">{w}</p>
@@ -546,7 +908,7 @@ export const SelfServiceRunner: React.FC = () => {
                       <div>
                         <label className="text-[11px] font-semibold text-slate-600 block mb-1 flex items-center space-x-1">
                           <MapPin className="w-3 h-3 text-slate-400" />
-                          <span>Latitude (Y)</span>
+                          <span>Latitude (North/South)</span>
                         </label>
                         <select
                           value={selectedLatCol}
@@ -565,7 +927,7 @@ export const SelfServiceRunner: React.FC = () => {
                       <div>
                         <label className="text-[11px] font-semibold text-slate-600 block mb-1 flex items-center space-x-1">
                           <Compass className="w-3 h-3 text-slate-400" />
-                          <span>Longitude (X)</span>
+                          <span>Longitude (East/West)</span>
                         </label>
                         <select
                           value={selectedLngCol}
@@ -586,7 +948,7 @@ export const SelfServiceRunner: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-[11px] font-semibold text-slate-600 block flex items-center space-x-1">
                       <FileSpreadsheet className="w-3 h-3 text-slate-400" />
-                      <span>Postal / ZIP Code Column</span>
+                      <span>US ZIP / Postal Code Column</span>
                     </label>
                     <select
                       value={selectedZipCol}
@@ -601,7 +963,7 @@ export const SelfServiceRunner: React.FC = () => {
                       ))}
                     </select>
                     <p className="text-[11px] text-slate-400 font-normal">
-                      Resolves US 5-digit and ZIP+4 postal codes into geographic centroids automatically.
+                      Resolves US 5-digit and ZIP+4 postal codes into exact geographic center coordinates automatically.
                     </p>
                   </div>
                 )}
@@ -610,7 +972,7 @@ export const SelfServiceRunner: React.FC = () => {
                 {isProcessing && progress && (
                   <div className="space-y-1.5 pt-1">
                     <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                      <span>Web Worker R-Tree Processing</span>
+                      <span>Matching Boundaries in Browser</span>
                       <span className="tabular-nums font-semibold">
                         {progress.processed.toLocaleString()} / {progress.total.toLocaleString()}
                       </span>
@@ -637,12 +999,12 @@ export const SelfServiceRunner: React.FC = () => {
                     (inputMode === 'coordinates' && (!selectedLatCol || !selectedLngCol)) ||
                     (inputMode === 'postal_code' && !selectedZipCol)
                   }
-                  leftIcon={!isProcessing ? <Zap className="w-4 h-4" /> : undefined}
+                  leftIcon={!isProcessing ? <Sparkles className="w-4 h-4 text-white" /> : undefined}
                   className="w-full"
                 >
                   {isProcessing
-                    ? `Computing (${progress?.processed || 0} / ${progress?.total || 0})...`
-                    : 'Execute Spatial Enrichment'}
+                    ? `Adding Boundary Data (${progress?.processed || 0} / ${progress?.total || 0})...`
+                    : 'Add Boundary Data to Spreadsheet'}
                 </Button>
               </div>
             </Card>
@@ -667,14 +1029,14 @@ export const SelfServiceRunner: React.FC = () => {
                     <div>
                       <div className="flex items-center space-x-2">
                         <h2 className="text-sm font-bold text-slate-900">
-                          Enrichment Calculation Complete
+                          Spreadsheet Enrichment Complete
                         </h2>
                         <Badge variant="success" size="sm">
-                          {percentMatched}% Matched
+                          {percentMatched}% Successfully Matched
                         </Badge>
                       </div>
                       <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        Processed {lastResult.summary.totalRows.toLocaleString()} records in {lastResult.summary.executionTimeMs} ms via Flatbush R-Tree
+                        Enriched {lastResult.summary.totalRows.toLocaleString()} rows in {lastResult.summary.executionTimeMs} ms with zero server transmission
                       </p>
                     </div>
                   </div>
@@ -694,7 +1056,7 @@ export const SelfServiceRunner: React.FC = () => {
                       }
                       leftIcon={<Download className="w-3.5 h-3.5" />}
                     >
-                      Export Excel (.xlsx)
+                      Export Enriched Excel (.xlsx)
                     </Button>
 
                     {lastResult.summary.unmatchedRows > 0 && (
@@ -704,7 +1066,7 @@ export const SelfServiceRunner: React.FC = () => {
                         onClick={() => exportExceptionsReport(lastResult.data, lastResult.fileName)}
                         leftIcon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
                       >
-                        Exceptions ({lastResult.summary.unmatchedRows})
+                        Unmatched Rows ({lastResult.summary.unmatchedRows})
                       </Button>
                     )}
 
@@ -730,7 +1092,7 @@ export const SelfServiceRunner: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      Total Records
+                      Total Rows Processed
                     </span>
                     <span className="text-xl font-bold font-mono text-slate-900 tabular-nums">
                       {lastResult.summary.totalRows.toLocaleString()}
@@ -739,7 +1101,7 @@ export const SelfServiceRunner: React.FC = () => {
 
                   <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      Matched
+                      Successfully Matched
                     </span>
                     <div className="flex items-baseline space-x-1.5">
                       <span className="text-xl font-bold font-mono text-emerald-700 tabular-nums">
@@ -753,7 +1115,7 @@ export const SelfServiceRunner: React.FC = () => {
 
                   <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      Exceptions
+                      Unmatched Rows
                     </span>
                     <span className="text-xl font-bold font-mono text-amber-700 tabular-nums">
                       {lastResult.summary.unmatchedRows.toLocaleString()}
@@ -762,7 +1124,7 @@ export const SelfServiceRunner: React.FC = () => {
 
                   <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      Enriched Columns
+                      New Columns Added
                     </span>
                     <span className="text-xl font-bold font-mono text-accent-700 tabular-nums">
                       +{lastResult.summary.addedColumns.length}
@@ -774,10 +1136,10 @@ export const SelfServiceRunner: React.FC = () => {
                 {lastResult.summary.confidenceBreakdown && (
                   <div className="pt-2 border-t border-surface-border flex flex-wrap items-center gap-2">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1">
-                      Audit Classification:
+                      Match Classification:
                     </span>
                     <Badge variant="success" size="sm">
-                      Exact: {lastResult.summary.confidenceBreakdown.highExact.toLocaleString()}
+                      Exact Boundary: {lastResult.summary.confidenceBreakdown.highExact.toLocaleString()}
                     </Badge>
                     {lastResult.summary.confidenceBreakdown.centroidFallback > 0 && (
                       <Badge variant="info" size="sm">
@@ -786,12 +1148,12 @@ export const SelfServiceRunner: React.FC = () => {
                     )}
                     {lastResult.summary.confidenceBreakdown.ambiguousOverlap > 0 && (
                       <Badge variant="warning" size="sm">
-                        Overlap Notice: {lastResult.summary.confidenceBreakdown.ambiguousOverlap.toLocaleString()}
+                        Boundary Overlap: {lastResult.summary.confidenceBreakdown.ambiguousOverlap.toLocaleString()}
                       </Badge>
                     )}
                     {lastResult.summary.confidenceBreakdown.unmatched > 0 && (
                       <Badge variant="danger" size="sm">
-                        Unassigned: {lastResult.summary.confidenceBreakdown.unmatched.toLocaleString()}
+                        Outside Boundaries: {lastResult.summary.confidenceBreakdown.unmatched.toLocaleString()}
                       </Badge>
                     )}
                   </div>
@@ -806,7 +1168,11 @@ export const SelfServiceRunner: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Globe className="w-4 h-4 text-slate-600" />
                 <h3 className="text-xs font-bold text-slate-900 tracking-tight">
-                  {activeTab === 'map' ? 'Spatial Cartographic Canvas' : 'Enriched Tabular Inspection'}
+                  {activeTab === 'preview'
+                    ? 'Spreadsheet Transformation Preview'
+                    : activeTab === 'map'
+                    ? 'Boundary Map Preview'
+                    : 'Enriched Spreadsheet Inspection'}
                 </h3>
                 {currentLayer && (
                   <span className="hidden sm:inline-flex text-[11px] font-mono text-slate-400 border-l border-surface-border pl-2 ml-2">
@@ -815,19 +1181,37 @@ export const SelfServiceRunner: React.FC = () => {
                 )}
               </div>
 
-              <SegmentedControl
-                size="sm"
-                options={[
-                  { value: 'map', label: 'Map View' },
-                  { value: 'table', label: 'Table Inspection', disabled: !lastResult && !uploadedRows },
-                ]}
-                value={activeTab}
-                onChange={(v) => setActiveTab(v as 'map' | 'table')}
-              />
+              {!lastResult && !uploadedRows ? (
+                <SegmentedControl
+                  size="sm"
+                  options={[
+                    { value: 'preview', label: 'Spreadsheet Example' },
+                    { value: 'map', label: 'Boundary Map' },
+                  ]}
+                  value={activeTab === 'map' ? 'map' : 'preview'}
+                  onChange={(v) => setActiveTab(v as any)}
+                />
+              ) : (
+                <SegmentedControl
+                  size="sm"
+                  options={[
+                    { value: 'table', label: 'Enriched Table' },
+                    { value: 'map', label: 'Interactive Map' },
+                  ]}
+                  value={activeTab === 'map' ? 'map' : 'table'}
+                  onChange={(v) => setActiveTab(v as any)}
+                />
+              )}
             </div>
 
             <div className="p-0">
-              {activeTab === 'map' ? (
+              {activeTab === 'preview' && !lastResult && !uploadedRows ? (
+                <SpreadsheetTransformationPreview
+                  currentRecipeTitle={currentRecipe?.title || 'Territory Match'}
+                  onTrySample={handleOneClickTestDrive}
+                  isProcessing={isProcessing}
+                />
+              ) : activeTab === 'map' ? (
                 <div className="p-3">
                   <PreviewMap
                     referenceLayer={currentLayer}
@@ -845,7 +1229,7 @@ export const SelfServiceRunner: React.FC = () => {
                     />
                   ) : (
                     <div className="py-20 text-center text-xs text-slate-400">
-                      Upload a dataset to inspect rows.
+                      Upload a spreadsheet to inspect rows.
                     </div>
                   )}
                 </div>
