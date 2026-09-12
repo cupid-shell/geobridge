@@ -1,25 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { FeatureCollection } from 'geojson';
-import { Layers, RotateCcw } from 'lucide-react';
+import { Layers, Maximize2, Compass } from 'lucide-react';
 import type { ReferenceLayer } from '../../types/recipe';
 
 interface PreviewMapProps {
   referenceLayer?: ReferenceLayer;
   enrichedPointsGeoJSON?: FeatureCollection | null;
   className?: string;
+  onPointSelect?: (properties: Record<string, any>) => void;
 }
 
 export const PreviewMap: React.FC<PreviewMapProps> = ({
   referenceLayer,
   enrichedPointsGeoJSON,
   className = 'h-96',
+  onPointSelect,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<maplibregl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [cursorCoords, setCursorCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [zoomLevel, setZoomLevel] = useState<number>(3.5);
 
-  // Initialize Map
+  // Initialize Map with high-contrast, clean analytical Positron tiles
   useEffect(() => {
     if (!mapContainer.current || mapInstance.current) return;
 
@@ -28,21 +32,21 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
       style: {
         version: 8,
         sources: {
-          'osm-tiles': {
+          'carto-positron': {
             type: 'raster',
             tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
             ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
+            attribution: '© OpenStreetMap, © CARTO',
           },
         },
         layers: [
           {
-            id: 'osm-layer',
+            id: 'carto-positron-layer',
             type: 'raster',
-            source: 'osm-tiles',
+            source: 'carto-positron',
             minzoom: 0,
             maxzoom: 19,
           },
@@ -57,6 +61,14 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
     map.on('load', () => {
       setMapLoaded(true);
       mapInstance.current = map;
+    });
+
+    map.on('mousemove', (e) => {
+      setCursorCoords({ lat: e.lngLat.lat, lng: e.lngLat.lng });
+    });
+
+    map.on('zoom', () => {
+      setZoomLevel(map.getZoom());
     });
 
     return () => {
@@ -92,8 +104,8 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
         type: 'fill',
         source: 'ref-source',
         paint: {
-          'fill-color': '#3b82f6',
-          'fill-opacity': 0.15,
+          'fill-color': '#1d4ed8',
+          'fill-opacity': 0.1,
         },
       });
 
@@ -102,9 +114,9 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
         type: 'line',
         source: 'ref-source',
         paint: {
-          'line-color': '#2563eb',
-          'line-width': 2,
-          'line-dasharray': [2, 1],
+          'line-color': '#1d4ed8',
+          'line-width': 1.5,
+          'line-opacity': 0.8,
         },
       });
     } else if (referenceLayer.geometryType === 'Point') {
@@ -113,26 +125,27 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
         type: 'circle',
         source: 'ref-source',
         paint: {
-          'circle-radius': 7,
-          'circle-color': '#ef4444',
+          'circle-radius': 6,
+          'circle-color': '#0284c7',
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
         },
       });
     }
 
-    // Fit map to reference bounds if no points are present
     if (!enrichedPointsGeoJSON && referenceLayer.geojson.features.length > 0) {
       fitToGeoJSON(map, referenceLayer.geojson);
     }
   }, [referenceLayer, mapLoaded]);
 
-  // Update User Points Layer
+  // Update Enriched User Points Layer with Clustering
   useEffect(() => {
     const map = mapInstance.current;
     if (!map || !mapLoaded) return;
 
-    if (map.getLayer('points-layer')) map.removeLayer('points-layer');
+    if (map.getLayer('clusters-circle')) map.removeLayer('clusters-circle');
+    if (map.getLayer('cluster-count')) map.removeLayer('cluster-count');
+    if (map.getLayer('unclustered-point')) map.removeLayer('unclustered-point');
     if (map.getSource('user-points')) map.removeSource('user-points');
 
     if (!enrichedPointsGeoJSON || enrichedPointsGeoJSON.features.length === 0) return;
@@ -140,58 +153,146 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
     map.addSource('user-points', {
       type: 'geojson',
       data: enrichedPointsGeoJSON,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 40,
     });
 
+    // Clustered circles
     map.addLayer({
-      id: 'points-layer',
+      id: 'clusters-circle',
       type: 'circle',
       source: 'user-points',
+      filter: ['has', 'point_count'],
       paint: {
-        'circle-radius': 6,
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          '#1e293b', // default slate-800
+          25,
+          '#0f172a',
+          100,
+          '#020617',
+        ],
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          16,
+          25,
+          20,
+          100,
+          26,
+        ],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+      },
+    });
+
+    // Cluster count label
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'user-points',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-font': ['Open Sans Semibold'],
+        'text-size': 11,
+      },
+      paint: {
+        'text-color': '#ffffff',
+      },
+    });
+
+    // Unclustered individual points
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'circle',
+      source: 'user-points',
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-radius': 5.5,
         'circle-color': [
           'case',
-          ['boolean', ['get', '_matched'], true],
-          '#10b981', // Emerald for matched
-          '#f59e0b', // Amber for unmatched
+          ['==', ['get', 'match_confidence'], 'HIGH_EXACT'],
+          '#16a34a',
+          ['==', ['get', 'match_confidence'], 'CENTROID_FALLBACK'],
+          '#0284c7',
+          ['==', ['get', 'match_confidence'], 'AMBIGUOUS_OVERLAP'],
+          '#d97706',
+          ['==', ['get', 'match_confidence'], 'BORDERLINE_REVIEW'],
+          '#d97706',
+          '#dc2626', // unmatched
         ],
         'circle-stroke-width': 1.5,
         'circle-stroke-color': '#ffffff',
       },
     });
 
-    // Add click popup
-    map.on('click', 'points-layer', (e: any) => {
+    // Inspect individual point on click
+    map.on('click', 'unclustered-point', (e: any) => {
       if (!e.features || !e.features[0]) return;
       const feature = e.features[0];
       const coords = (feature.geometry as any).coordinates.slice();
       const props = feature.properties || {};
 
-      const content = Object.entries(props)
+      if (onPointSelect) {
+        onPointSelect(props);
+      }
+
+      const rowsHtml = Object.entries(props)
         .filter(([k]) => !k.startsWith('_'))
         .slice(0, 8)
         .map(
-          ([key, val]) =>
-            `<div class="text-sm py-1 flex items-start justify-between border-b border-slate-100 last:border-0"><strong class="text-slate-700 font-semibold pr-2">${key}:</strong> <span class="text-slate-900 font-mono font-medium text-right">${val}</span></div>`
+          ([k, v]) =>
+            `<div class="flex items-center justify-between py-1 border-b border-slate-100 text-xs">
+              <span class="text-slate-500 font-medium">${k}</span>
+              <span class="font-mono text-slate-900 font-medium">${v ?? '-'}</span>
+            </div>`
         )
         .join('');
 
-      new maplibregl.Popup({ offset: 12, maxWidth: '320px', className: 'geobridge-map-popup' })
+      new maplibregl.Popup({ offset: 12, maxWidth: '280px' })
         .setLngLat(coords)
         .setHTML(
-          `<div class="p-2 font-sans">
-            <div class="text-sm font-bold text-slate-900 pb-1.5 border-b border-slate-200 mb-1.5 flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider ${props._matched ? 'text-emerald-700' : 'text-amber-700'}">${props._matched ? 'Matched Record' : 'Unmatched'}</span>
+          `<div class="font-sans space-y-1.5 p-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 pb-1 border-b border-slate-200">
+              Record Inspection
             </div>
-            ${content}
+            <div class="space-y-0.5">
+              ${rowsHtml}
+            </div>
           </div>`
         )
         .addTo(map);
     });
 
-    map.on('mouseenter', 'points-layer', () => {
+    // Zoom on cluster click
+    map.on('click', 'clusters-circle', (e: any) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: ['clusters-circle'] });
+      const clusterId = features[0]?.properties?.cluster_id;
+      const source: any = map.getSource('user-points');
+      if (source && clusterId) {
+        source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+          if (err) return;
+          map.easeTo({
+            center: (features[0].geometry as any).coordinates,
+            zoom: zoom + 0.5,
+          });
+        });
+      }
+    });
+
+    map.on('mouseenter', 'unclustered-point', () => {
       map.getCanvas().style.cursor = 'pointer';
     });
-    map.on('mouseleave', 'points-layer', () => {
+    map.on('mouseleave', 'unclustered-point', () => {
+      map.getCanvas().style.cursor = '';
+    });
+    map.on('mouseenter', 'clusters-circle', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'clusters-circle', () => {
       map.getCanvas().style.cursor = '';
     });
 
@@ -224,7 +325,7 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
       }
 
       if (hasCoords && !bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+        map.fitBounds(bounds, { padding: 45, maxZoom: 13 });
       }
     } catch (e) {
       console.warn('Could not calculate bounds for map', e);
@@ -244,44 +345,74 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
   };
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 ${className}`}>
-      <div ref={mapContainer} className="w-full h-full min-h-[420px]" />
+    <div
+      className={`relative w-full rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-slate-100 ${className}`}
+    >
+      <div ref={mapContainer} className="w-full h-full min-h-[380px]" />
 
-      {/* Floating Map Controls & Legend */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col space-y-2">
-        <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-slate-200/90 text-sm">
-          <div className="font-bold text-slate-900 flex items-center space-x-2 mb-2">
-            <Layers className="w-4 h-4 text-emerald-600" />
+      {/* Top-Left: Active Layer Overlay Card */}
+      <div className="absolute top-3 left-3 z-10 flex flex-col space-y-1.5 pointer-events-none">
+        <div className="bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-xs border border-slate-200/80 text-xs pointer-events-auto space-y-1.5 min-w-[170px]">
+          <div className="flex items-center space-x-1.5 text-slate-800 font-semibold text-[11px] uppercase tracking-wider pb-1 border-b border-slate-100">
+            <Layers className="w-3.5 h-3.5 text-slate-500" />
             <span>Map Layers</span>
           </div>
-          <div className="space-y-1.5 text-xs text-slate-700">
+
+          <div className="space-y-1 text-xs">
             {referenceLayer && (
-              <div className="flex items-center space-x-2">
-                <span className="w-3 h-3 rounded bg-blue-500/50 border border-blue-600 inline-block" />
-                <span className="font-semibold text-slate-800 truncate max-w-[180px]">{referenceLayer.name}</span>
-              </div>
-            )}
-            {enrichedPointsGeoJSON && (
-              <>
-                <div className="flex items-center space-x-2">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-200" />
-                  <span className="font-semibold text-slate-800">
-                    Enriched Points ({enrichedPointsGeoJSON.features.length})
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-1.5 truncate">
+                  <span className="w-2.5 h-2.5 rounded bg-blue-500/30 border border-blue-600 shrink-0" />
+                  <span className="text-slate-700 truncate font-medium max-w-[130px]" title={referenceLayer.name}>
+                    {referenceLayer.name}
                   </span>
                 </div>
-              </>
+                <span className="font-mono text-[10px] text-slate-400">
+                  {referenceLayer.featureCount}
+                </span>
+              </div>
+            )}
+
+            {enrichedPointsGeoJSON && (
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-1 ring-emerald-300 shrink-0" />
+                  <span className="text-slate-700 font-medium">Points</span>
+                </div>
+                <span className="font-mono text-[10px] text-slate-400">
+                  {enrichedPointsGeoJSON.features.length.toLocaleString()}
+                </span>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <button
-        onClick={handleResetZoom}
-        title="Reset map view"
-        className="absolute bottom-4 right-4 z-10 p-3 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 shadow-lg text-slate-700 hover:text-emerald-700 hover:bg-white hover:scale-105 transition-all"
-      >
-        <RotateCcw className="w-5 h-5" />
-      </button>
+      {/* Top-Right: Map Utilities */}
+      <div className="absolute top-3 right-12 z-10">
+        <button
+          type="button"
+          onClick={handleResetZoom}
+          title="Zoom to data extent"
+          className="p-1.5 bg-white/95 backdrop-blur-sm rounded-lg border border-slate-200/80 shadow-xs text-slate-600 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Bottom-Left: Real-Time Coordinate Telemetry Readout */}
+      <div className="absolute bottom-2 left-3 z-10 pointer-events-none">
+        <div className="backdrop-blur-sm bg-white/90 border border-slate-200/70 rounded px-2 py-0.5 text-[10px] font-mono text-slate-500 tabular-nums flex items-center space-x-2 shadow-2xs">
+          <Compass className="w-3 h-3 text-slate-400" />
+          <span>
+            {cursorCoords
+              ? `${cursorCoords.lat.toFixed(4)}°, ${cursorCoords.lng.toFixed(4)}°`
+              : 'Hover to inspect'}
+          </span>
+          <span className="text-slate-300">|</span>
+          <span>Zoom: {zoomLevel.toFixed(1)}</span>
+        </div>
+      </div>
     </div>
   );
 };
