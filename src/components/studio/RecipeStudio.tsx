@@ -360,14 +360,14 @@ export const RecipeStudio: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-surface-border">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-normal">
               GIS Recipe Studio
             </h1>
             <Badge variant="neutral" size="sm">
               Authoring Deck
             </Badge>
           </div>
-          <p className="text-sm text-slate-500 font-normal mt-1">
+          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed">
             Author boundary match logic, facility proximity joins, and column schemas for non-technical users.
           </p>
         </div>
@@ -386,7 +386,7 @@ export const RecipeStudio: React.FC = () => {
 
           <div className="px-3 py-2 bg-surface-subtle rounded-lg border border-surface-border text-xs font-medium text-slate-600 flex items-center space-x-2">
             <Database className="w-3.5 h-3.5 text-slate-500" />
-            <span className="font-mono text-[11px]">{referenceLayers.length} Layers • {recipes.length} Recipes</span>
+            <span className="font-mono text-xs">{referenceLayers.length} Layers • {recipes.length} Recipes</span>
           </div>
         </div>
       </div>
@@ -720,7 +720,7 @@ export const RecipeStudio: React.FC = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <span className="w-5 h-5 rounded-md bg-slate-900 text-white font-bold text-[10px] flex items-center justify-center">
+                              <span className="w-5 h-5 rounded-md bg-slate-900 text-white font-bold text-xs flex items-center justify-center">
                                 {sIdx + 1}
                               </span>
                               <input
@@ -784,13 +784,13 @@ export const RecipeStudio: React.FC = () => {
                           {/* Step Mappings */}
                           <div className="space-y-2 pt-2 border-t border-surface-border">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                                 Output Columns:
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleAddStepMapping(sIdx)}
-                                className="text-[11px] font-semibold text-accent-700 hover:text-accent-900 cursor-pointer"
+                                className="text-xs font-semibold text-accent-700 hover:text-accent-900 cursor-pointer"
                               >
                                 + Add Column
                               </button>
@@ -987,7 +987,7 @@ export const RecipeStudio: React.FC = () => {
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                     Active Reference Layer
                   </span>
                   <CardTitle className="text-sm font-bold text-slate-900 mt-0.5">
@@ -1006,7 +1006,7 @@ export const RecipeStudio: React.FC = () => {
 
             {activeLayer && (
               <div className="p-3.5 bg-surface-subtle border-t border-surface-border space-y-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                   Click to add attribute to recipe:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -1015,7 +1015,7 @@ export const RecipeStudio: React.FC = () => {
                       key={f}
                       type="button"
                       onClick={() => handleQuickAddAttribute(f)}
-                      className="px-2.5 py-1 bg-surface-card hover:bg-surface-subtle border border-surface-border text-slate-800 rounded font-mono text-[11px] font-medium transition-colors shadow-2xs flex items-center space-x-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-surface-card hover:bg-surface-subtle border border-surface-border text-slate-800 rounded font-mono text-xs font-medium transition-colors shadow-2xs flex items-center space-x-1 cursor-pointer"
                       title={`Click to add "${f}" to output mappings`}
                     >
                       <Plus className="w-3 h-3 text-slate-500" />

@@ -69,22 +69,22 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && (
         <div
           role="tooltip"
-          className={`absolute ${positionClasses[position]} z-50 w-64 p-2.5 bg-slate-900 text-white rounded-lg shadow-xl border border-slate-800 text-left pointer-events-none transition-all duration-150 animate-in fade-in-50 zoom-in-95`}
+          className={`absolute ${positionClasses[position]} z-50 w-72 p-3 bg-slate-900 text-white rounded-lg shadow-xl border border-slate-800 text-left pointer-events-none transition-all duration-150 animate-in fade-in-50 zoom-in-95`}
         >
           {title && (
-            <div className="flex items-center space-x-1.5 font-semibold text-slate-100 text-xs pb-1 border-b border-slate-800 mb-1">
-              <Info className="w-3 h-3 text-slate-400 shrink-0" />
+            <div className="flex items-center space-x-1.5 font-semibold text-slate-100 text-xs pb-1.5 border-b border-slate-800 mb-1.5">
+              <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span>{title}</span>
             </div>
           )}
 
-          <p className="text-[11px] text-slate-300 leading-relaxed">
+          <p className="text-xs text-slate-300 leading-relaxed">
             {content}
           </p>
 
           {howToUse && (
-            <div className="mt-1.5 pt-1.5 border-t border-slate-800 text-[10px] text-slate-400 leading-tight">
-              <strong className="text-slate-200">Guidance:</strong> {howToUse}
+            <div className="mt-2 pt-1.5 border-t border-slate-800 text-[11px] text-slate-400 leading-normal">
+              <strong className="text-slate-200 font-semibold">Guidance:</strong> {howToUse}
             </div>
           )}
 

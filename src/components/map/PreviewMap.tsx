@@ -367,7 +367,7 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
                     {referenceLayer.name}
                   </span>
                 </div>
-                <span className="font-mono text-[10px] text-slate-400">
+                <span className="font-mono text-xs text-slate-400">
                   {referenceLayer.featureCount}
                 </span>
               </div>
@@ -379,7 +379,7 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-1 ring-emerald-300 shrink-0" />
                   <span className="text-slate-700 font-medium">Points</span>
                 </div>
-                <span className="font-mono text-[10px] text-slate-400">
+                <span className="font-mono text-xs text-slate-400">
                   {enrichedPointsGeoJSON.features.length.toLocaleString()}
                 </span>
               </div>
@@ -402,7 +402,7 @@ export const PreviewMap: React.FC<PreviewMapProps> = ({
 
       {/* Bottom-Left: Real-Time Coordinate Telemetry Readout */}
       <div className="absolute bottom-2 left-3 z-10 pointer-events-none">
-        <div className="backdrop-blur-sm bg-white/90 border border-slate-200/70 rounded px-2 py-0.5 text-[10px] font-mono text-slate-500 tabular-nums flex items-center space-x-2 shadow-2xs">
+        <div className="backdrop-blur-sm bg-white/90 border border-slate-200/70 rounded-md px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums flex items-center space-x-2 shadow-2xs">
           <Compass className="w-3 h-3 text-slate-400" />
           <span>
             {cursorCoords

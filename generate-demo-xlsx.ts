@@ -1,4 +1,4 @@
-﻿import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import * as path from 'path';
 
 const demoData = [
@@ -287,4 +287,4 @@ XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Leads');
 const outputPath = path.resolve(process.cwd(), 'demo_customer_leads.xlsx');
 XLSX.writeFile(workbook, outputPath);
 
-console.log(`✅ Successfully generated demo Excel file at: ${outputPath}`);
+console.log(`[SUCCESS] Successfully generated demo Excel file at: ${outputPath}`);

@@ -41,10 +41,10 @@ export const Header: React.FC = () => {
               <Layers className="w-4 h-4" />
             </div>
             <div className="flex items-baseline space-x-2">
-              <span className="text-base font-semibold tracking-tight text-slate-900">
+              <span className="text-base font-bold text-slate-900 tracking-normal">
                 GeoBridge
               </span>
-              <span className="text-[10px] font-mono text-slate-400 font-medium">
+              <span className="text-xs font-mono text-slate-400 font-medium">
                 v1.2
               </span>
             </div>

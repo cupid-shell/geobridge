@@ -23,10 +23,10 @@ export function App() {
       </main>
 
       {/* Professional Minimal Footer */}
-      <footer className="bg-surface-card border-t border-surface-border py-3 mt-auto">
+      <footer className="bg-surface-card border-t border-surface-border py-3.5 mt-auto">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-medium gap-2">
           <p className="font-medium text-slate-600">GeoBridge — In-Browser Spatial Calculation Engine</p>
-          <p className="font-mono text-[11px] text-slate-400">EPSG:4326 (WGS84) • Flatbush R-Tree • Client-Side Zero Egress</p>
+          <p className="font-mono text-xs text-slate-400">EPSG:4326 (WGS84) • Flatbush R-Tree • Client-Side Zero Egress</p>
         </div>
       </footer>
     </div>

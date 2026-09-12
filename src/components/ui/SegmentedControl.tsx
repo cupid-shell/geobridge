@@ -29,8 +29,8 @@ export function SegmentedControl<T extends string = string>({
   };
 
   const itemSizeStyles = {
-    sm: 'py-1 px-2.5 gap-1.5',
-    md: 'py-1.5 px-3 gap-2',
+    sm: 'py-1 px-3 gap-1.5',
+    md: 'py-1.5 px-3.5 gap-2',
   };
 
   return (
@@ -61,7 +61,7 @@ export function SegmentedControl<T extends string = string>({
             <span>{option.label}</span>
             {option.badge !== undefined && (
               <span
-                className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${
                   isSelected
                     ? 'bg-slate-100 text-slate-700 font-semibold'
                     : 'bg-slate-200/70 text-slate-600'

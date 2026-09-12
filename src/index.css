@@ -5,12 +5,14 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
+  letter-spacing: -0.006em;
   color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -19,11 +21,13 @@ body {
   min-height: 100vh;
   background-color: #f8fafc;
   color: #0f172a;
+  letter-spacing: -0.006em;
 }
 
 /* Tabular figures for coordinates, numbers, and execution times */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 /* Sleek minimalist scrollbar */

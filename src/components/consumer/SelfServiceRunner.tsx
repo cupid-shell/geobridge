@@ -120,103 +120,103 @@ const SpreadsheetTransformationPreview: React.FC<SpreadsheetTransformationPrevie
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-100/70 font-semibold text-slate-600">
-                <th className="py-2.5 px-3">lead_id</th>
-                <th className="py-2.5 px-3">company_name</th>
-                <th className="py-2.5 px-3">city</th>
-                <th className="py-2.5 px-3">state</th>
-                <th className="py-2.5 px-3 font-mono">latitude</th>
-                <th className="py-2.5 px-3 font-mono">longitude</th>
+                <th className="py-3 px-3.5">lead_id</th>
+                <th className="py-3 px-3.5">company_name</th>
+                <th className="py-3 px-3.5">city</th>
+                <th className="py-3 px-3.5">state</th>
+                <th className="py-3 px-3.5 font-mono">latitude</th>
+                <th className="py-3 px-3.5 font-mono">longitude</th>
                 {/* Enriched Columns */}
-                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 border-l-2 border-accent-400 font-mono">
+                <th className="py-3 px-3.5 bg-accent-50 text-accent-900 border-l-2 border-accent-400 font-mono">
                   +Assigned_Territory
                 </th>
-                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                <th className="py-3 px-3.5 bg-accent-50 text-accent-900 font-mono">
                   +Account_Director
                 </th>
-                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                <th className="py-3 px-3.5 bg-accent-50 text-accent-900 font-mono">
                   +Closest_Hub
                 </th>
-                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                <th className="py-3 px-3.5 bg-accent-50 text-accent-900 font-mono">
                   +Distance_mi
                 </th>
-                <th className="py-2.5 px-3 bg-accent-50 text-accent-900 font-mono">
+                <th className="py-3 px-3.5 bg-accent-50 text-accent-900 font-mono">
                   +Match_Status
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               <tr className="hover:bg-slate-50/70 transition-colors">
-                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-001</td>
-                <td className="py-2.5 px-3 font-semibold text-slate-800">Apex Logistics</td>
-                <td className="py-2.5 px-3 text-slate-600">Seattle</td>
-                <td className="py-2.5 px-3 text-slate-600">WA</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">47.6062</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">-122.3321</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                <td className="py-3 px-3.5 font-mono text-slate-500">LEAD-001</td>
+                <td className="py-3 px-3.5 font-semibold text-slate-800">Apex Logistics</td>
+                <td className="py-3 px-3.5 text-slate-600">Seattle</td>
+                <td className="py-3 px-3.5 text-slate-600">WA</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">47.6062</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">-122.3321</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
                   Western Region
                 </td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Sarah Lin</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Seattle Cargo Hub</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">4.2 mi</td>
-                <td className="py-2.5 px-3 bg-accent-50/40">
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-900">Sarah Lin</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-slate-700">Seattle Cargo Hub</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 font-mono font-semibold text-accent-900">4.2 mi</td>
+                <td className="py-3 px-3.5 bg-accent-50/40">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     Exact Match
                   </span>
                 </td>
               </tr>
               <tr className="hover:bg-slate-50/70 transition-colors">
-                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-002</td>
-                <td className="py-2.5 px-3 font-semibold text-slate-800">Lone Star Distribution</td>
-                <td className="py-2.5 px-3 text-slate-600">Houston</td>
-                <td className="py-2.5 px-3 text-slate-600">TX</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">29.7604</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">-95.3698</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                <td className="py-3 px-3.5 font-mono text-slate-500">LEAD-002</td>
+                <td className="py-3 px-3.5 font-semibold text-slate-800">Lone Star Distribution</td>
+                <td className="py-3 px-3.5 text-slate-600">Houston</td>
+                <td className="py-3 px-3.5 text-slate-600">TX</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">29.7604</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">-95.3698</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
                   Southern Region
                 </td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Marcus Vance</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">DFW Regional Hub</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">238.5 mi</td>
-                <td className="py-2.5 px-3 bg-accent-50/40">
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-900">Marcus Vance</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-slate-700">DFW Regional Hub</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 font-mono font-semibold text-accent-900">238.5 mi</td>
+                <td className="py-3 px-3.5 bg-accent-50/40">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     Exact Match
                   </span>
                 </td>
               </tr>
               <tr className="hover:bg-slate-50/70 transition-colors">
-                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-003</td>
-                <td className="py-2.5 px-3 font-semibold text-slate-800">Midwest Health Systems</td>
-                <td className="py-2.5 px-3 text-slate-600">Chicago</td>
-                <td className="py-2.5 px-3 text-slate-600">IL</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">41.8781</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">-87.6298</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                <td className="py-3 px-3.5 font-mono text-slate-500">LEAD-003</td>
+                <td className="py-3 px-3.5 font-semibold text-slate-800">Midwest Health Systems</td>
+                <td className="py-3 px-3.5 text-slate-600">Chicago</td>
+                <td className="py-3 px-3.5 text-slate-600">IL</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">41.8781</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">-87.6298</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
                   Midwest Region
                 </td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">Elena Rostova</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Chicago Central Hub</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">8.9 mi</td>
-                <td className="py-2.5 px-3 bg-accent-50/40">
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-900">Elena Rostova</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-slate-700">Chicago Central Hub</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 font-mono font-semibold text-accent-900">8.9 mi</td>
+                <td className="py-3 px-3.5 bg-accent-50/40">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     Exact Match
                   </span>
                 </td>
               </tr>
               <tr className="hover:bg-slate-50/70 transition-colors">
-                <td className="py-2.5 px-3 font-mono text-slate-500">LEAD-004</td>
-                <td className="py-2.5 px-3 font-semibold text-slate-800">Empire Financial</td>
-                <td className="py-2.5 px-3 text-slate-600">New York</td>
-                <td className="py-2.5 px-3 text-slate-600">NY</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">40.7128</td>
-                <td className="py-2.5 px-3 font-mono text-slate-400">-74.0060</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
+                <td className="py-3 px-3.5 font-mono text-slate-500">LEAD-004</td>
+                <td className="py-3 px-3.5 font-semibold text-slate-800">Empire Financial</td>
+                <td className="py-3 px-3.5 text-slate-600">New York</td>
+                <td className="py-3 px-3.5 text-slate-600">NY</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">40.7128</td>
+                <td className="py-3 px-3.5 font-mono text-slate-400">-74.0060</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-950 font-semibold border-l-2 border-accent-400">
                   Northeast Region
                 </td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-accent-900">David Chen</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 text-slate-700">Newark Air Cargo</td>
-                <td className="py-2.5 px-3 bg-accent-50/40 font-mono font-semibold text-accent-900">11.8 mi</td>
-                <td className="py-2.5 px-3 bg-accent-50/40">
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <td className="py-3 px-3.5 bg-accent-50/40 text-accent-900">David Chen</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 text-slate-700">Newark Air Cargo</td>
+                <td className="py-3 px-3.5 bg-accent-50/40 font-mono font-semibold text-accent-900">11.8 mi</td>
+                <td className="py-3 px-3.5 bg-accent-50/40">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     Exact Match
                   </span>
                 </td>
@@ -227,27 +227,27 @@ const SpreadsheetTransformationPreview: React.FC<SpreadsheetTransformationPrevie
       </div>
 
       {/* 3 Step Workflow Graphic */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 1</span>
-          <h4 className="text-xs font-bold text-slate-900">Drop Your Spreadsheet</h4>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
+        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 1</span>
+          <h4 className="text-sm font-bold text-slate-900">Drop Your Spreadsheet</h4>
+          <p className="text-xs text-slate-500 leading-relaxed font-normal">
             Excel (.xlsx, .xls) or CSV with coordinates or standard 5-digit US ZIP codes.
           </p>
         </div>
 
-        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 2</span>
-          <h4 className="text-xs font-bold text-slate-900">Instant In-Browser Match</h4>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 2</span>
+          <h4 className="text-sm font-bold text-slate-900">Instant In-Browser Match</h4>
+          <p className="text-xs text-slate-500 leading-relaxed font-normal">
             Matches rows against official boundaries in seconds without uploading rows anywhere.
           </p>
         </div>
 
-        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Step 3</span>
-          <h4 className="text-xs font-bold text-slate-900">Download Enriched File</h4>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Step 3</span>
+          <h4 className="text-sm font-bold text-slate-900">Download Enriched File</h4>
+          <p className="text-xs text-slate-500 leading-relaxed font-normal">
             Get your Excel file back with all new boundary and distance columns ready for reporting.
           </p>
         </div>
@@ -471,14 +471,14 @@ export const SelfServiceRunner: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-surface-border">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-normal">
               Spreadsheet Location Matcher
             </h1>
             <Badge variant="neutral" size="sm">
               100% In-Browser
             </Badge>
           </div>
-          <p className="text-sm text-slate-500 font-normal mt-1">
+          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed">
             Enrich customer and property spreadsheets with official territories, nearest warehouse mileage, and risk tiers with zero data egress.
           </p>
         </div>
@@ -539,16 +539,16 @@ export const SelfServiceRunner: React.FC = () => {
 
       {/* Interactive Test Drive Hero Sandbox Banner */}
       <div className="bg-slate-900 text-white rounded-xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent-500/20 text-accent-300 border border-accent-500/30">
+        <div className="space-y-1.5">
+          <div className="flex items-center space-x-2.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-accent-500/20 text-accent-300 border border-accent-500/30">
               Interactive Test Drive
             </span>
-            <h2 className="text-sm font-bold text-white">
+            <h2 className="text-base font-bold text-white">
               New to GeoBridge? Test it with 1 click
             </h2>
           </div>
-          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
             Click <strong>Run 1-Click Test Drive</strong> to immediately load 20 sample customer accounts and run boundary matching in real time. No file upload required.
           </p>
         </div>
@@ -593,7 +593,7 @@ export const SelfServiceRunner: React.FC = () => {
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-[11px] font-bold">
+                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
                     1
                   </span>
                   <CardTitle className="text-sm font-bold text-slate-900">
@@ -617,7 +617,7 @@ export const SelfServiceRunner: React.FC = () => {
             <div className="p-4 space-y-3.5">
               {/* Visual Preset Goal Cards */}
               <div className="space-y-2">
-                <span className="text-[11px] font-semibold text-slate-600 block">
+                <span className="text-xs font-semibold text-slate-600 block">
                   Select a business goal:
                 </span>
                 <div className="grid grid-cols-1 gap-2">
@@ -628,18 +628,18 @@ export const SelfServiceRunner: React.FC = () => {
                         key={goal.id}
                         type="button"
                         onClick={() => setSelectedRecipeId(goal.id)}
-                        className={`w-full p-2.5 rounded-lg text-left transition-all border cursor-pointer ${
+                        className={`w-full p-3.5 rounded-lg text-left transition-all border cursor-pointer ${
                           isSelected
                             ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
                             : 'border-surface-border bg-surface-card hover:bg-surface-subtle text-slate-800'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                          <span className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                             {goal.title}
                           </span>
                           <span
-                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                            className={`text-[11px] font-medium px-2 py-0.5 rounded ${
                               isSelected
                                 ? 'bg-slate-800 text-slate-300 border border-slate-700'
                                 : 'bg-surface-subtle text-slate-500 border border-surface-border'
@@ -649,7 +649,7 @@ export const SelfServiceRunner: React.FC = () => {
                           </span>
                         </div>
                         <p
-                          className={`text-[11px] mt-1 leading-snug font-normal ${
+                          className={`text-xs mt-1.5 leading-relaxed font-normal ${
                             isSelected ? 'text-slate-300' : 'text-slate-500'
                           }`}
                         >
@@ -662,13 +662,13 @@ export const SelfServiceRunner: React.FC = () => {
 
                 {/* Dropdown for Custom / All Templates */}
                 <div className="pt-2 border-t border-surface-border space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-500 block">
+                  <label className="text-xs font-semibold text-slate-500 block">
                     Or choose from all templates ({recipes.length} available):
                   </label>
                   <select
                     value={selectedRecipeId}
                     onChange={(e) => setSelectedRecipeId(e.target.value)}
-                    className="w-full bg-surface-card hover:bg-surface-subtle border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent-600 transition-colors cursor-pointer"
+                    className="w-full bg-surface-card hover:bg-surface-subtle border border-surface-border rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent-600 transition-colors cursor-pointer"
                   >
                     {recipes.map((recipe) => (
                       <option key={recipe.id} value={recipe.id}>
@@ -680,7 +680,7 @@ export const SelfServiceRunner: React.FC = () => {
               </div>
 
               {currentRecipe && (
-                <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border space-y-2.5">
+                <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border space-y-2.5">
                   <p className="text-xs text-slate-600 font-normal leading-relaxed">
                     {currentRecipe.description}
                   </p>
@@ -689,7 +689,7 @@ export const SelfServiceRunner: React.FC = () => {
                     <div className="space-y-2 pt-2 border-t border-surface-border">
                       <div className="flex items-center space-x-1.5 text-slate-700">
                         <GitMerge className="w-3.5 h-3.5 text-accent-600" />
-                        <span className="text-[11px] font-semibold uppercase tracking-wider">
+                        <span className="text-xs font-semibold uppercase tracking-wider">
                           Combined Rule ({currentRecipe.steps.length} Stages)
                         </span>
                       </div>
@@ -722,13 +722,13 @@ export const SelfServiceRunner: React.FC = () => {
                                     content={`Extracts "${m.sourceField}" from ${stepLayer?.name || 'layer'}. Fallback: "${m.fallbackValue ?? 'Unassigned'}".`}
                                     position="top"
                                   >
-                                    <span className="px-1.5 py-0.5 bg-surface-subtle text-slate-700 border border-surface-border rounded font-mono text-[10px] font-medium cursor-help">
+                                    <span className="px-2 py-0.5 bg-surface-subtle text-slate-700 border border-surface-border rounded font-mono text-xs font-medium cursor-help">
                                       +{m.targetField}
                                     </span>
                                   </Tooltip>
                                 ))}
                                 {step.operation === 'nearest_neighbor' && step.includeDistanceField && (
-                                  <span className="px-1.5 py-0.5 bg-surface-subtle text-slate-700 border border-surface-border rounded font-mono text-[10px] font-medium">
+                                  <span className="px-2 py-0.5 bg-surface-subtle text-slate-700 border border-surface-border rounded font-mono text-xs font-medium">
                                     +{step.distanceFieldName || 'distance'}
                                   </span>
                                 )}
@@ -740,7 +740,7 @@ export const SelfServiceRunner: React.FC = () => {
                     </div>
                   ) : (
                     <div className="pt-2 border-t border-surface-border flex flex-wrap gap-1">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block w-full mb-0.5">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block w-full mb-0.5">
                         New Columns Appended
                       </span>
                       {currentRecipe.fieldMappings.map((m, idx) => (
@@ -750,7 +750,7 @@ export const SelfServiceRunner: React.FC = () => {
                           content={`Extracts "${m.sourceField}" from ${currentLayer?.name}. If outside boundary, defaults to "${m.fallbackValue ?? 'Unassigned'}".`}
                           position="top"
                         >
-                          <span className="px-2 py-0.5 bg-surface-card text-slate-800 border border-surface-border rounded font-mono text-[11px] font-medium cursor-help">
+                          <span className="px-2 py-0.5 bg-surface-card text-slate-800 border border-surface-border rounded font-mono text-xs font-medium cursor-help">
                             +{m.targetField}
                           </span>
                         </Tooltip>
@@ -761,12 +761,12 @@ export const SelfServiceRunner: React.FC = () => {
                           content={`Calculates distance in ${currentRecipe.distanceUnit || 'miles'} to closest facility point.`}
                           position="top"
                         >
-                          <span className="px-2 py-0.5 bg-surface-card text-slate-800 border border-surface-border rounded font-mono text-[11px] font-medium cursor-help">
+                          <span className="px-2 py-0.5 bg-surface-card text-slate-800 border border-surface-border rounded font-mono text-xs font-medium cursor-help">
                             +{currentRecipe.distanceFieldName || 'distance'}
                           </span>
                         </Tooltip>
                       )}
-                      <span className="px-2 py-0.5 bg-surface-card text-slate-500 border border-surface-border rounded font-mono text-[11px] font-medium">
+                      <span className="px-2 py-0.5 bg-surface-card text-slate-500 border border-surface-border rounded font-mono text-xs font-medium">
                         +match_confidence
                       </span>
                     </div>
@@ -781,14 +781,14 @@ export const SelfServiceRunner: React.FC = () => {
             <CardHeader className="pb-3 border-b border-surface-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-[11px] font-bold">
+                  <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
                     2
                   </span>
                   <CardTitle className="text-sm font-bold text-slate-900">
                     Upload Your Spreadsheet
                   </CardTitle>
                 </div>
-                <span className="text-[11px] font-medium text-slate-400">
+                <span className="text-xs font-medium text-slate-400">
                   Excel / CSV
                 </span>
               </div>
@@ -819,14 +819,14 @@ export const SelfServiceRunner: React.FC = () => {
                     <Upload className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-slate-900">
                       {fileName ? (
                         <span className="text-accent-700 font-mono">{fileName}</span>
                       ) : (
                         'Drop spreadsheet or click to browse'
                       )}
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 font-normal">
+                    <p className="text-xs text-slate-400 mt-1 font-normal leading-relaxed">
                       Coordinates or postal codes are detected automatically
                     </p>
                   </div>
@@ -839,7 +839,7 @@ export const SelfServiceRunner: React.FC = () => {
                     <FileCheck2 className="w-3.5 h-3.5 text-slate-600" />
                     <span className="tabular-nums font-mono font-semibold text-slate-900">{uploadedRows.length.toLocaleString()}</span> rows loaded
                   </span>
-                  <span className="text-[11px] text-slate-400 font-mono">100% Private (No Cloud Egress)</span>
+                  <span className="text-xs text-slate-400 font-mono">100% Private (No Cloud Egress)</span>
                 </div>
               )}
             </div>
@@ -851,7 +851,7 @@ export const SelfServiceRunner: React.FC = () => {
               <CardHeader className="pb-3 border-b border-surface-border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-[11px] font-bold">
+                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">
                       3
                     </span>
                     <CardTitle className="text-sm font-bold text-slate-900">
@@ -1089,22 +1089,22 @@ export const SelfServiceRunner: React.FC = () => {
                 </div>
 
                 {/* Quantitative Metric Counters */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                  <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                       Total Rows Processed
                     </span>
-                    <span className="text-xl font-bold font-mono text-slate-900 tabular-nums">
+                    <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
                       {lastResult.summary.totalRows.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                       Successfully Matched
                     </span>
                     <div className="flex items-baseline space-x-1.5">
-                      <span className="text-xl font-bold font-mono text-emerald-700 tabular-nums">
+                      <span className="text-2xl font-bold font-mono text-emerald-700 tabular-nums">
                         {lastResult.summary.matchedRows.toLocaleString()}
                       </span>
                       <span className="text-xs font-medium text-slate-500">
@@ -1113,20 +1113,20 @@ export const SelfServiceRunner: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                       Unmatched Rows
                     </span>
-                    <span className="text-xl font-bold font-mono text-amber-700 tabular-nums">
+                    <span className="text-2xl font-bold font-mono text-amber-700 tabular-nums">
                       {lastResult.summary.unmatchedRows.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-surface-border">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  <div className="bg-surface-subtle p-3.5 rounded-lg border border-surface-border">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                       New Columns Added
                     </span>
-                    <span className="text-xl font-bold font-mono text-accent-700 tabular-nums">
+                    <span className="text-2xl font-bold font-mono text-accent-700 tabular-nums">
                       +{lastResult.summary.addedColumns.length}
                     </span>
                   </div>
@@ -1134,8 +1134,8 @@ export const SelfServiceRunner: React.FC = () => {
 
                 {/* Audit Confidence Breakdown Bar */}
                 {lastResult.summary.confidenceBreakdown && (
-                  <div className="pt-2 border-t border-surface-border flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1">
+                  <div className="pt-2.5 border-t border-surface-border flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mr-1">
                       Match Classification:
                     </span>
                     <Badge variant="success" size="sm">
@@ -1164,10 +1164,10 @@ export const SelfServiceRunner: React.FC = () => {
 
           {/* Canvas Container: Map View vs Tabular Inspection */}
           <Card className="overflow-hidden border-surface-border">
-            <div className="px-5 py-3 border-b border-surface-border bg-surface-card flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+            <div className="px-5 py-3.5 border-b border-surface-border bg-surface-card flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
                 <Globe className="w-4 h-4 text-slate-600" />
-                <h3 className="text-xs font-bold text-slate-900 tracking-tight">
+                <h3 className="text-sm font-bold text-slate-900">
                   {activeTab === 'preview'
                     ? 'Spreadsheet Transformation Preview'
                     : activeTab === 'map'
@@ -1175,7 +1175,7 @@ export const SelfServiceRunner: React.FC = () => {
                     : 'Enriched Spreadsheet Inspection'}
                 </h3>
                 {currentLayer && (
-                  <span className="hidden sm:inline-flex text-[11px] font-mono text-slate-400 border-l border-surface-border pl-2 ml-2">
+                  <span className="hidden sm:inline-flex text-xs font-mono text-slate-400 border-l border-surface-border pl-2.5 ml-2.5">
                     Layer: {currentLayer.name} ({currentLayer.featureCount} features)
                   </span>
                 )}

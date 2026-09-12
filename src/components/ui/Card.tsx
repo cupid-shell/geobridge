@@ -29,7 +29,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => (
   <h3
-    className={`text-sm font-semibold tracking-tight text-slate-900 ${className}`}
+    className={`text-sm font-bold text-slate-900 tracking-normal ${className}`}
     {...props}
   >
     {children}
@@ -41,7 +41,7 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
   children,
   ...props
 }) => (
-  <p className={`text-xs text-slate-500 mt-0.5 leading-relaxed ${className}`} {...props}>
+  <p className={`text-xs text-slate-500 mt-1 leading-relaxed ${className}`} {...props}>
     {children}
   </p>
 );

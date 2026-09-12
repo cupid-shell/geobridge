@@ -38,14 +38,14 @@ export const DocumentationView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-surface-border">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-normal">
               GeoBridge Business User Guide
             </h1>
             <Badge variant="neutral" size="sm">
               Plain-English Playbook
             </Badge>
           </div>
-          <p className="text-sm text-slate-500 font-normal mt-1">
+          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed">
             Learn how to enrich spreadsheets with sales territories, nearest warehouse distances, and hazard zones in under 60 seconds.
           </p>
         </div>
@@ -66,8 +66,8 @@ export const DocumentationView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Navigation Sidebar */}
-        <div className="lg:col-span-3 sticky top-24 space-y-1 bg-surface-card p-3 rounded-xl border border-surface-border shadow-2xs">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3 py-1.5 block">
+        <div className="lg:col-span-3 sticky top-24 space-y-1 bg-surface-card p-3.5 rounded-xl border border-surface-border shadow-2xs">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 py-1.5 block">
             User Playbook
           </span>
           {navItems.map((item) => {
@@ -301,22 +301,22 @@ export const DocumentationView: React.FC = () => {
                   <p className="text-xs text-slate-600 font-normal">
                     You only need <strong>one</strong> of the two following options:
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1.5">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1.5">
+                      <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">
                         Option A (Highest Accuracy)
                       </span>
-                      <h4 className="text-xs font-bold text-slate-900">Latitude & Longitude Columns</h4>
+                      <h4 className="text-sm font-bold text-slate-900">Latitude & Longitude Columns</h4>
                       <p className="text-xs text-slate-500 font-normal leading-relaxed">
                         Standard GPS coordinates in decimal degrees (e.g. Latitude: <code>37.7749</code>, Longitude: <code>-122.4194</code>).
                       </p>
                     </div>
 
-                    <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1.5">
-                      <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">
+                    <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1.5">
+                      <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">
                         Option B (No Coordinates Required)
                       </span>
-                      <h4 className="text-xs font-bold text-slate-900">US Postal / ZIP Code Column</h4>
+                      <h4 className="text-sm font-bold text-slate-900">US Postal / ZIP Code Column</h4>
                       <p className="text-xs text-slate-500 font-normal leading-relaxed">
                         Standard 5-digit US ZIP code (e.g. <code>94107</code>) or ZIP+4 (e.g. <code>94107-1234</code>). GeoBridge resolves the exact geographic center automatically.
                       </p>
@@ -570,8 +570,8 @@ export const DocumentationView: React.FC = () => {
 
               <div className="space-y-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded bg-slate-900 text-white inline-flex items-center justify-center text-[10px] font-bold">1</span>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">1</span>
                     <span>Export Reference Boundaries from ArcGIS or QGIS</span>
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
@@ -580,8 +580,8 @@ export const DocumentationView: React.FC = () => {
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded bg-slate-900 text-white inline-flex items-center justify-center text-[10px] font-bold">2</span>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">2</span>
                     <span>Build the Matching Rule in Template Builder</span>
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
@@ -590,8 +590,8 @@ export const DocumentationView: React.FC = () => {
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-2">
-                    <span className="w-5 h-5 rounded bg-slate-900 text-white inline-flex items-center justify-center text-[10px] font-bold">3</span>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <span className="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-xs font-bold">3</span>
                     <span>Package as a .georecipe Bundle File</span>
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
